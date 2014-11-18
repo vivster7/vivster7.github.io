@@ -54,12 +54,11 @@ function init() {
   var gui = new dat.GUI({
       height : 5 * 32 - 1
   });
-  var params = {mRNA: "#ffff00", antisense_RNA: "#ff00ff", Ribosomal_RNA: "#00ffff", Nuclei: "#C0C0C0"};
+  var params = {mRNA: "#ffff00", Antisense_RNA: "#ff00ff", Ribosomal_RNA: "#00ffff", Nuclei: "#C0C0C0"};
   gui.addColor(params, 'mRNA');
-  gui.addColor(params, 'antisense_RNA');
+  gui.addColor(params, 'Antisense_RNA');
   gui.addColor(params, 'Ribosomal_RNA');
   gui.addColor(params, 'Nuclei');
-
 
   var geomReads = new THREE.Geometry();
    //Adds RNA reads to the scene as spheres -- yellow dots
