@@ -49,33 +49,37 @@ function init() {
   headlight = new THREE.PointLight( 0xFFFFFF ,3, 3000 );
   headlight.position.copy( camera.position );
   scene.add( headlight );
-  // var light = new THREE.HemisphereLight(0x777777, 0x000000, 0.6);
-  // scene.add(light);
 
   //Add Selection box
   var gui = new dat.GUI({
       height : 5 * 32 - 1
   });
-  var params = {selection: "RIBO18S"};
-  gui.add(params, 'selection');
+  var params = {mRNA: "#ffff00", antisense_RNA: "#ff00ff", Ribosomal_RNA: "#00ffff", Nuclei: "#C0C0C0"};
+  gui.addColor(params, 'mRNA');
+  gui.addColor(params, 'antisense_RNA');
+  gui.addColor(params, 'Ribosomal_RNA');
+  gui.addColor(params, 'Nuclei');
+
 
   var geomReads = new THREE.Geometry();
    //Adds RNA reads to the scene as spheres -- yellow dots
-  d3.csv("data/R1_coords2.csv")
+  d3.csv("data/R1_results3.csv")
     .row(function(data) { return data; })
     .get(function(error, reads) { 
       reads.forEach(function(read) {
-        var gene = read.string_gene_names;
+        var rna_class = read.string_rna_class;
         var x = read.centroid_y;
         var y = read.centroid_x;
         var z = Math.floor( (Math.random() * 100) - 10 ); //Random int from -10 to 90.
         var vertex = new THREE.Vector3( x, y, z);
-        var color = new THREE.Color( 1, 0, 0 );
-        if (gene === "RIBO18S") { color = new THREE.Color( 1, 1, 1 ); }
+        var color = new THREE.Color( "#FFFFFF " );
+        if (rna_class === "+NM") { color = new THREE.Color( "#ffff00" ); }
+        if (rna_class === "-NM") { color = new THREE.Color( "#ff00ff" ); }
+        if (!!rna_class.match(/\+RIBO/)) { color = new THREE.Color( "#00ffff" ); }
         geomReads.vertices.push( vertex );
         geomReads.colors.push( color );
       });
-      var material = new THREE.PointCloudMaterial({ size: 2, vertexColors: THREE.VertexColors, sizeAttenuation: true });
+      var material = new THREE.PointCloudMaterial({ size: 3, vertexColors: THREE.VertexColors, sizeAttenuation: true });
       var pointCloud = new THREE.PointCloud( geomReads, material );
       scene.add( pointCloud );
 
