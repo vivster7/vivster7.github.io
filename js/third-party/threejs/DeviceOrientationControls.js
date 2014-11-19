@@ -21,7 +21,7 @@ THREE.DeviceOrientationControls = function(object) {
 
   this.object.rotation.reorder('YXZ');
 
-  this.freeze = false;
+  this.freeze = true;
 
   this.movementSpeed = 1.0;
   this.rollSpeed = 0.005;
@@ -88,14 +88,14 @@ THREE.DeviceOrientationControls = function(object) {
 
     return function() {
 
-      // if (this.freeze) return;
+      if (this.freeze) return;
 
       // should not need this
-      // var orientation = getOrientation(); 
-      // if (orientation !== this.screenOrientation) {
-      //   this.screenOrientation = orientation;
-      //   this.autoAlign = true;
-      // }
+      var orientation = getOrientation(); 
+      if (orientation !== this.screenOrientation) {
+        this.screenOrientation = orientation;
+        this.autoAlign = true;
+      }
 
       this.alpha = this.deviceOrientation.gamma ?
         THREE.Math.degToRad(this.deviceOrientation.alpha) : 0; // Z
@@ -178,8 +178,8 @@ THREE.DeviceOrientationControls = function(object) {
     // run once on load
     this.onScreenOrientationChangeEvent();
 
-    window.addEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
-    window.addEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
+    // window.addEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
+    window.addEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, true);
 
     this.freeze = false;
 
@@ -191,8 +191,8 @@ THREE.DeviceOrientationControls = function(object) {
 
     this.freeze = true;
 
-    window.removeEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
-    window.removeEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
+    // window.removeEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
+    window.removeEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, true);
 
   };
 

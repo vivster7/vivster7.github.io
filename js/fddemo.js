@@ -36,8 +36,6 @@ function init() {
     controls.connect();
     controls.update();
 
-    window.freeze = controls.freeze;
-
     element.addEventListener('click', fullscreen, false);
 
     window.removeEventListener('deviceorientation', setOrientationControls);
