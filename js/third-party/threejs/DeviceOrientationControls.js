@@ -91,11 +91,11 @@ THREE.DeviceOrientationControls = function(object) {
       // if (this.freeze) return;
 
       // should not need this
-      var orientation = getOrientation(); 
-      if (orientation !== this.screenOrientation) {
-        this.screenOrientation = orientation;
-        this.autoAlign = true;
-      }
+      // var orientation = getOrientation(); 
+      // if (orientation !== this.screenOrientation) {
+      //   this.screenOrientation = orientation;
+      //   this.autoAlign = true;
+      // }
 
       this.alpha = this.deviceOrientation.gamma ?
         THREE.Math.degToRad(this.deviceOrientation.alpha) : 0; // Z
