@@ -88,7 +88,7 @@ THREE.DeviceOrientationControls = function(object) {
 
     return function() {
 
-      if (this.freeze) return;
+      // if (this.freeze) return;
 
       // should not need this
       var orientation = getOrientation(); 
