@@ -187,14 +187,14 @@ THREE.DeviceOrientationControls = function(object) {
 
   };
 
-  this.disconnect = function() {
+  // this.disconnect = function() {
 
-    this.freeze = true;
+  //   this.freeze = true;
 
-    // window.removeEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
-    window.removeEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
+  //   // window.removeEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
+  //   window.removeEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
 
-  };
+  // };
 
 
 };
