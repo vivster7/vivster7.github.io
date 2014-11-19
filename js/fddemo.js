@@ -28,9 +28,9 @@ function init() {
   controls.noPan = false;
 
   function setOrientationControls(e) {
-    // if (!e.alpha) {
-    //   return;
-    // }
+    if (!e.alpha) {
+      return;
+    }
 
     controls = new THREE.DeviceOrientationControls(camera, true);
     controls.connect();
