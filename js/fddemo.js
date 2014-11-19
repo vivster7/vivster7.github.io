@@ -145,7 +145,7 @@ function update(dt) {
   headlight.position.copy( camera.position );
   camera.updateProjectionMatrix();
   controls.update(dt);
-  
+
 }
 
 function render(dt) {
