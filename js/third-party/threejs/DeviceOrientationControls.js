@@ -178,7 +178,7 @@ THREE.DeviceOrientationControls = function(object) {
     // run once on load
     this.onScreenOrientationChangeEvent();
 
-    // window.addEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
+    window.addEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
     window.addEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
 
     this.freeze = false;
@@ -187,14 +187,14 @@ THREE.DeviceOrientationControls = function(object) {
 
   };
 
-  // this.disconnect = function() {
+  this.disconnect = function() {
 
-  //   this.freeze = true;
+    this.freeze = true;
 
-  //   // window.removeEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
-  //   window.removeEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
+    window.removeEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
+    window.removeEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
 
-  // };
+  };
 
 
 };
