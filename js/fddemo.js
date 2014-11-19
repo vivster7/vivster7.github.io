@@ -142,12 +142,10 @@ function resize() {
 function update(dt) {
   resize();
 
-  camera.updateProjectionMatrix();
-
-  controls.update(dt);
-
-  // headlight.update(dt);
   headlight.position.copy( camera.position );
+  camera.updateProjectionMatrix();
+  controls.update(dt);
+  
 }
 
 function render(dt) {
@@ -156,7 +154,6 @@ function render(dt) {
 
 function animate(t) {
   requestAnimationFrame(animate);
-
   update(clock.getDelta());
   render(clock.getDelta());
 }

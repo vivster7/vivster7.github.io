@@ -21,17 +21,17 @@ THREE.DeviceOrientationControls = function(object) {
 
   this.object.rotation.reorder('YXZ');
 
-  this.freeze = true;
+  this.freeze = false;
 
   this.movementSpeed = 1.0;
   this.rollSpeed = 0.005;
   this.autoAlign = true;
   this.autoForward = false;
 
-  this.alpha = 180;
-  this.beta = 180;
-  this.gamma = 180;
-  this.orient = 180;
+  this.alpha = 0;
+  this.beta = 0;
+  this.gamma = 0;
+  this.orient = 0;
 
   this.alignQuaternion = new THREE.Quaternion();
   this.orientationQuaternion = new THREE.Quaternion();
@@ -85,9 +85,9 @@ THREE.DeviceOrientationControls = function(object) {
   }).bind(this);
 
   this.update = function(delta) {
-
+    
     return function() {
-
+      
       if (this.freeze) return;
 
       // should not need this
@@ -98,11 +98,11 @@ THREE.DeviceOrientationControls = function(object) {
       }
 
       this.alpha = this.deviceOrientation.gamma ?
-        THREE.Math.degToRad(this.deviceOrientation.alpha) : 0; // Z
+        THREE.Math.degToRad(this.deviceOrientation.alpha) : 90; // Z
       this.beta = this.deviceOrientation.beta ?
         THREE.Math.degToRad(this.deviceOrientation.beta) : 0; // X'
       this.gamma = this.deviceOrientation.gamma ?
-        THREE.Math.degToRad(this.deviceOrientation.gamma) : 0; // Y''
+        THREE.Math.degToRad(this.deviceOrientation.gamma) : 90; // Y''
       this.orient = this.screenOrientation ?
         THREE.Math.degToRad(this.screenOrientation) : 0; // O
 
