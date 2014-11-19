@@ -28,10 +28,10 @@ THREE.DeviceOrientationControls = function(object) {
   this.autoAlign = true;
   this.autoForward = false;
 
-  this.alpha = 0;
-  this.beta = 0;
-  this.gamma = 0;
-  this.orient = 0;
+  this.alpha = 180;
+  this.beta = 180;
+  this.gamma = 180;
+  this.orient = 180;
 
   this.alignQuaternion = new THREE.Quaternion();
   this.orientationQuaternion = new THREE.Quaternion();
