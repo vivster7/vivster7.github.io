@@ -87,7 +87,7 @@ THREE.DeviceOrientationControls = function(object) {
   this.update = function(delta) {
     
     return function() {
-      
+
       if (this.freeze) return;
 
       // should not need this
