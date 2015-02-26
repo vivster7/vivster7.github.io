@@ -52,11 +52,13 @@ var quickhull = function(geometry) {
 
     faceStack = getFaces( boundingBox );
 
-    while ( faceStack ):
+    while ( faceStack ){
+
         face = faceStack.pop();
         point = findFurthest( face );
 
-
+    }
+    
     return convexHull;
 
 }
