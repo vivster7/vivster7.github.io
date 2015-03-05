@@ -9,56 +9,181 @@ var Quickhull = function () {
         CLASSES
     */
 
-    // Extend vector class with associated face
-    var QPoint = function ( x, y, z, face ) {
+    // Extend vector class
+    function QPoint ( x, y, z, face ) {
 
         THREE.Vector3.call( this, x, y, z );
         this.face = face;
 
+        this.isSeenByFace = function ( face, geometry ) {
+
+            var outwardNormal = face.normal,
+                pointOnFace = geometry.vertices[ face.a ],
+                segmentFaceToPoint = new QPoint();
+
+            segmentFaceToPoint.subVectors( this, pointOnFace );
+
+            if ( segmentFaceToPoint.isSameDirection( outwardNormal ) ) return true;
+
+            return false;
+
+        }
+
+        this.isSameDirection = function ( vector ) {
+
+            if ( this.dot( vector ) > 0 ) return true;
+
+            return false;
+
+        }
+
     }
 
     QPoint.prototype = Object.create( THREE.Vector3.prototype );
-    QPoint.prototype.constructor = THREE.QPoint;
+    QPoint.prototype.constructor = QPoint;
 
-    // Extend face class with point list
-    var QFace = function ( a, b, c, normal, color, materialIndex, pointList ) {
+    // Extend face class
+    function QFace ( a, b, c, normal, color, materialIndex, points ) {
 
         THREE.Face3.call( this, a, b, c, normal, color, materialIndex );
-        this.pointList = pointList || [];
+        this.points = points || [];
+
+        this.setNormalOutwards = function ( geometry ) {
+
+            var normal = this.normal,
+                insidePoint = geometry.insidePoint,
+                pointOnFace = geometry.vertices[ this.a ],
+                outwardVector = new QPoint();
+
+            outwardVector.subVectors( pointOnFace, insidePoint );
+
+            if (! outwardVector.isSameDirection( normal ) ) {
+
+                this.normal = normal.negate();
+            }
+            return;
+        };
+
+        this.mostDistantPoint = function ( geometry ) {
+
+            var farthest, constant, plane,
+                normal = this.normal,
+                pointA = geometry.vertices[ this.a ];
+
+            constant = normal.dot( pointA );
+
+            plane = new THREE.Plane( normal, constant );
+
+            farthest =  _.max( this.points, distanceFromFace, plane );
+
+            return farthest;
+        };
+
+        function distanceFromFace ( point ) {
+
+            var plane = this;
+
+            return plane.distanceToPoint( point );
+        }
 
     }
 
     QFace.prototype = Object.create( THREE.Face3.prototype );
-    QFace.prototype.constructor = THREE.QFace;
+    QFace.prototype.constructor = QFace;
 
-    /*
-        QUICKHULL IMPLEMENTATION
-    */
+    // Extend geometry class.
+    function ConvexHullGeometry ( ) {
 
-    var convex_hull = new THREE.Geometry(),
-        stack;
+        THREE.Geometry.call( this );
+        this.insidePoint = new QPoint(0,0,0);
 
-    var init = function ( geometry ) {
+        this.computeCentroid = function () {
 
-        var points =  _.each( geometry.vertices, convert_to_QPoints );
 
-        convex_hull = initialize_hull( points );
 
-        // assign_points_to_faces ( points, convex_hull )
+            var average_x, average_y, average_z,
+                vertices = this.vertices,
+                centroid;
 
-        stack = convex_hull.faces;
+            average_x = _.mean( _.pluck( vertices, 'x' ) )
+            average_y = _.mean( _.pluck( vertices, 'y' ) )
+            average_z = _.mean( _.pluck( vertices, 'z' ) )
+
+            centroid = new THREE.Vector3( average_x, average_y, average_z );
+
+            return centroid;
+
+        }
+
+        this.setInsidePoint = function () {
+
+            this.insidePoint = this.computeCentroid();
+
+        }
+
+        this.computeOutwardFaceNormals = function() {
+
+            this.computeFaceNormals();
+
+            this.faces.forEach( function ( face )  {
+
+                face.setNormalOutwards( this );
+
+
+            }, this);
+
+        }
 
     }
 
-        var convert_to_QPoints = function( point ) {
+    ConvexHullGeometry.prototype = Object.create( THREE.Geometry.prototype );
+    ConvexHullGeometry.prototype.constructor = ConvexHullGeometry;
 
-            var x = point.x, y = point.y, z = point.z;
 
-            return QPoint( x, y, z );
+    var convexHull = new ConvexHullGeometry(),
+        stack = [];
 
-        };
+    return function ( geometry ) {
 
-        var initialize_hull = function ( points ) {
+        init( geometry );
+        expandHull( convexHull );
+
+        return convexHull;
+
+    };
+
+    /*
+        Quickhull implementation
+    */
+
+    function init ( geometry ) {
+
+        var points = convert_to_QPoints ( geometry.vertices );
+
+        convexHull = initialize_hull( points );
+
+        convexHull.setInsidePoint();
+        convexHull.computeOutwardFaceNormals();
+
+        // points = _.map( points, assign_to_face ); // remember remove;
+        _.each( points, assign_to_face );
+
+        stack = pushFacesOnStack ( convexHull.faces );
+
+    }
+
+        function convert_to_QPoints ( points ) {
+
+            var qpoints = []
+
+            points.forEach( function(p) { 
+                qpoints.push( new QPoint( p.x, p.y, p.z ) )
+             } );
+
+            return qpoints;
+        }
+
+        function initialize_hull ( points ) {
 
             var extremes, line, p1, p2, p3;
 
@@ -71,14 +196,14 @@ var Quickhull = function () {
 
             p3 = farthest_from_line( extremes, line );
 
-            convex_hull = build_hull( points, p1, p2, p3 );
+            convexHull = build_hull( points, p1, p2, p3 );
 
-            return convex_hull;
+            return convexHull;
 
-        };
+        }
 
 
-        var find_extremes = function ( points ) {
+        function find_extremes ( points ) {
 
             var extremes = [ points[0], points[0],
                              points[0], points[0],
@@ -99,13 +224,13 @@ var Quickhull = function () {
 
             return extremes;
 
-        };
+        }
 
-        var farthest_apart = function ( extremes ) {
+        function farthest_apart ( extremes ) {
 
             var line, start, stop,
                 point1, point2,
-                distance_apart = 0 ;
+                distance_apart = Number.NEGATIVE_INFINITY ;
 
             for ( var i = 0; i < extremes.length; i ++ ) {
                 for ( var j = i + 1; j < extremes.length; j++ ) {
@@ -113,7 +238,7 @@ var Quickhull = function () {
                     point1 = extremes[ i ];
                     point2 = extremes[ j ];
 
-                    if ( point1.distanceTo( point2 ) > distance_apart) {
+                    if ( point1.distanceToSquared( point2 ) > distance_apart) {
 
                         distance_apart = distance_apart;
                         start = point1;
@@ -128,17 +253,17 @@ var Quickhull = function () {
 
             return line;
 
-        };
+        }
 
-        var farthest_from_line = function ( extremes, line ) {
+        function farthest_from_line ( extremes, line ) {
 
             var distance, closest_point,
-                farthest, farthest_distance = 0;
+                farthest, farthest_distance = Number.NEGATIVE_INFINITY;
 
             extremes.forEach( function ( extreme ) {
 
                 closest_point = line.closestPointToPoint( extreme );
-                distance = closest_point.distanceTo( extreme );
+                distance = closest_point.distanceToSquared( extreme );
 
                 if ( distance > farthest_distance ) {
 
@@ -151,10 +276,10 @@ var Quickhull = function () {
 
             return farthest;
 
-        };
+        }
 
 
-        var build_hull = function ( points, p1, p2, p3 ) {
+        function build_hull ( points, p1, p2, p3 ) {
 
             var plane, p4, f1, f2, f3, f4;
 
@@ -167,14 +292,14 @@ var Quickhull = function () {
             f3 = new QFace( 0, 2, 3 );
             f4 = new QFace( 1, 2, 3 );
 
-            convex_hull.vertices = [ p1, p2, p3, p4 ];
-            convex_hull.faces = [ f1, f2, f3, f4 ];
+            convexHull.vertices = [ p1, p2, p3, p4 ];
+            convexHull.faces = [ f1, f2, f3, f4 ];
 
-            return convex_hull;
+            return convexHull;
 
-        };
+        }
 
-        var build_plane = function ( p1, p2, p3 ) {
+        function build_plane ( p1, p2, p3 ) {
 
             var plane,
                 normal = new THREE.Vector3(),
@@ -187,9 +312,9 @@ var Quickhull = function () {
 
             return plane;
 
-        };
+        }
 
-        var getNormal = function ( pointA, pointB, pointC ) {
+        function getNormal ( pointA, pointB, pointC ) {
 
             var segmentAB = new THREE.Vector3(),
                 segmentAC = new THREE.Vector3(),
@@ -202,16 +327,16 @@ var Quickhull = function () {
 
             return normal;
 
-        };
+        }
 
-        var farthest_from_plane = function ( points, plane ) {
+        function farthest_from_plane ( points, plane ) {
 
             var distance, farthest, 
-                farthest_distance = 0;
+                farthest_distance = Number.NEGATIVE_INFINITY;
 
             points.forEach( function( point ) {
 
-                distance =  plane.distanceToPoint( point );
+                distance = plane.distanceToPoint( point );
 
                 if ( distance > farthest_distance ) {
 
@@ -224,20 +349,194 @@ var Quickhull = function () {
 
             return farthest;
 
-        };
+        }
 
-    var expand_hull = function ( convex_hull ) {
+        function pushFacesOnStack ( faces ) {
+
+            faces = _.filter( faces, hasPoints )
+            stack = stack.concat( faces );
+
+            return stack;
+
+        }
+
+        function hasPoints ( face ) {
+
+            return !! face.points.length
+
+        }
+
+        function assign_to_face ( point ) {
+
+            var faces = this.faces || convexHull.faces;
+            var i = faces.length;
+
+            while (! point.face && i-- ) {
+
+                var face = faces[ i ];
+
+                if ( point.isSeenByFace( face, convexHull ) ) {
+
+                    point.face = face;
+                    face.points.push( point );
+
+                }
+            }
+
+            return;
+        }
+
+    function expandHull ( convexHull ) {
+
+        var face, lightFaces, lightPoint,
+            horizonEdges, newFaces;
+
+        while (!! stack.length) {
+
+            face = stack.pop();
+
+            lightPoint = face.mostDistantPoint( convexHull );
+
+            lightFaces = facesSeenFromPoint( lightPoint );
+
+            horizonEdges = getHorizonEdges ( lightFaces );
+
+            newFaces = updateFaces( lightPoint, horizonEdges, lightFaces );
+
+            stack = pushFacesOnStack( newFaces );
+
+        }
 
     }
 
-    // TODO :: Move to top (?)
-    return function ( geometry ) {
+        // TODO :: change from all faces to just adjacent faces.
+        function facesSeenFromPoint( point ) {
 
-        init( geometry );
-        expand_hull( convex_hull );
+            var facesSeem,
+                context = {'point': point, 'convexHull': convexHull};
+                faces = convexHull.faces;
 
-        return convex_hull;
+            facesSeen = _.filter( faces, isSeenByPoint, context);
 
-    };
+            return facesSeen;
+
+        }
+
+        function isSeenByPoint ( face ) {
+
+            var point = this.point,
+                convexHull = this.convexHull;
+
+            return point.isSeenByFace( face, convexHull );
+
+        }
+
+        function getHorizonEdges ( lightFaces ) {
+
+            var lightEdges, horizonEdges;
+
+            lightEdges = _.flatten( _.map( lightFaces, getEdges ) ); 
+
+            horizonEdges = _.filter( 
+                                _.map( lightEdges, occursOnce ),
+                                function ( bool ) { return !! bool }
+                                );
+
+            return horizonEdges;
+
+        }
+
+        function getEdges ( face ) {
+
+            var edge1, edge2, edge3;
+
+            edge1 = { 'v1': face.a, 'v2': face.b };
+            edge2 = { 'v1': face.a, 'v2': face.c };
+            edge3 = { 'v1': face.b, 'v2': face.c };
+
+            return [ edge1, edge2, edge3 ];
+
+        };
+
+        function occursOnce ( edge1, index, list) {
+
+            var occurances = 0;
+
+            _.each( list, function ( edge2 ) {
+                if ( hasEqualValues( edge1, edge2 ) ) occurances++;
+            });
+
+            if ( occurances === 1 ) return edge1;
+
+            return false;
+
+        }
+
+        function hasEqualValues( obj1, obj2 ) {
+
+            return _.difference( 
+                        _.values( obj1 ), 
+                        _.values( obj2 ) 
+                    ).length === 0; 
+
+        }
+
+        function updateFaces ( lightPoint, horizonEdges, lightFaces ) {
+
+            removeOldFaces( lightFaces );
+
+            buildNewFaces( lightPoint, horizonEdges );
+
+            reassignPoints( _.flatten( _.pluck( lightFaces, 'points' ) ) );
+
+        }
+
+        function removeOldFaces ( lightFaces ) {
+
+            convexHull.faces = _.difference( convexHull.faces, lightFaces )
+
+        }
+
+        function buildNewFaces ( lightPoint, horizonEdges ) {
+
+            var context, pointIndex;
+
+            convexHull.vertices.push( lightPoint );
+            pointIndex = convexHull.vertices.length - 1;
+
+            context = { 'pointIndex': pointIndex, 'convexHull': convexHull };
+
+            _.each( horizonEdges, buildFace, context );
+
+        }
+
+        function buildFace ( edge ) {
+
+            var pointIndex = this.pointIndex,
+                convexHull = this.convexHull,
+                face;
+
+            face = new QFace( edge.v1, edge.v2, pointIndex );
+
+            convexHull.faces.push( face );
+
+        }
+
+        function isPoint( point1 ) {
+
+            var point2 = this;
+
+            if ( point1.x === point2.x &&
+                 point1.y === point2.y &&
+                 point1.z === point2.z ) return true;
+
+            return false;
+
+        }
+
+        function reassignPoints ( points ) {
+
+            _.each( points, assign_to_face );
+        }
 
 }.call( this );

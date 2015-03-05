@@ -43,10 +43,31 @@ function init() {
 
   var geometry = new THREE.Geometry();
 
-  geometry.vertices  = [ new THREE.Vector3(0,0,0), new THREE.Vector3(10,0,0), new THREE.Vector3(0,10,0), new THREE.Vector3(0,0,10) ];
+  for (var i = 0; i < 200 ; i ++) {
+
+    var x = Math.random() * 200 - 100;
+    var y = Math.random() * 200 - 100;
+    var z = Math.random() * 200 - 100;
+
+    geometry.vertices.push( new THREE.Vector3( x,y,z ) );
+
+  }
+
+  var pointCloudMaterial = new THREE.PointCloudMaterial({ color: 0xff0000 });
+
+  var pointCloud = new THREE.PointCloud( geometry, pointCloudMaterial );
+
+  scene.add( pointCloud );
 
   var convex_hull = Quickhull( geometry );
-  var hull_material = new THREE.MeshBasicMaterial();
+
+  convex_hull.faces.forEach( function(face) {
+
+    face.color.setRGB( Math.random(), Math.random(), Math.random() );
+
+  });
+
+  var hull_material = new THREE.MeshBasicMaterial({ vertexColors: THREE.FaceColors, side: THREE.DoubleSide, transparent:true, opacity:0.5 });
   var mesh = new THREE.Mesh( convex_hull, hull_material );
 
   scene.add( mesh );
