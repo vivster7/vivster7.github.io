@@ -17,7 +17,7 @@ function init() {
 
   // Camera
   camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 20000);
-  camera.position.set(0,0,5);
+  camera.position.set(0,0,-400);
   scene.add(camera);
 
   // Resize listener
@@ -56,8 +56,6 @@ function init() {
   var pointCloudMaterial = new THREE.PointCloudMaterial({ color: 0xff0000 });
 
   var pointCloud = new THREE.PointCloud( geometry, pointCloudMaterial );
-
-  scene.add( pointCloud );
 
   var convex_hull = Quickhull( geometry );
 
