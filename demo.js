@@ -43,7 +43,7 @@ function init() {
 
   var geometry = new THREE.Geometry();
 
-  for (var i = 0; i < 200 ; i ++) {
+  for (var i = 0; i < 100 ; i ++) {
 
     var x = Math.random() * 200 - 100;
     var y = Math.random() * 200 - 100;
@@ -56,6 +56,8 @@ function init() {
   var pointCloudMaterial = new THREE.PointCloudMaterial({ color: 0xff0000 });
 
   var pointCloud = new THREE.PointCloud( geometry, pointCloudMaterial );
+
+  scene.add( pointCloud );
 
   var convex_hull = Quickhull( geometry );
 

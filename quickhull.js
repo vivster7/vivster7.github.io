@@ -77,6 +77,8 @@ var Quickhull = function () {
 
             farthest =  _.max( this.points, distanceFromFace, plane );
 
+            this.points = _.without( this.points, farthest )
+
             return farthest;
         };
 
@@ -351,6 +353,7 @@ var Quickhull = function () {
         function pushFacesOnStack ( faces ) {
 
             faces = _.filter( faces, hasPoints )
+
             stack = stack.concat( faces );
 
             return stack;
@@ -368,7 +371,7 @@ var Quickhull = function () {
             var faces = this.faces || convexHull.faces;
             var i = faces.length;
 
-            while (! point.face && i-- ) {
+            while ( !point.face && i-- ) {
 
                 var face = faces[ i ];
 
@@ -378,17 +381,24 @@ var Quickhull = function () {
                     face.points.push( point );
 
                 }
+
             }
 
             return;
         }
 
+        function unassign_from_face ( point ) {
+
+            if ( point.face ) point.face = undefined;
+
+        }
+
     function expandHull ( convexHull ) {
 
         var face, lightFaces, lightPoint,
-            horizonEdges, newFaces;
+            lightPoints, horizonEdges, newFaces;
 
-        while (!! stack.length) {
+        while ( !! stack.length ) {
 
             face = stack.pop();
 
@@ -400,6 +410,10 @@ var Quickhull = function () {
 
             newFaces = updateFaces( lightPoint, horizonEdges, lightFaces );
 
+            lightPoints = _.flatten( _.pluck( lightFaces, 'points' ) )
+
+            reassignPoints( lightPoints , newFaces );
+
             stack = pushFacesOnStack( newFaces );
 
         }
@@ -409,8 +423,8 @@ var Quickhull = function () {
         // TODO :: change from all faces to just adjacent faces.
         function facesSeenFromPoint( point ) {
 
-            var facesSeem,
-                context = {'point': point, 'convexHull': convexHull};
+            var facesSeen,
+                context = { 'point': point, 'convexHull': convexHull };
                 faces = convexHull.faces;
 
             facesSeen = _.filter( faces, isSeenByPoint, context);
@@ -480,11 +494,15 @@ var Quickhull = function () {
 
         function updateFaces ( lightPoint, horizonEdges, lightFaces ) {
 
+            var newFaces;
+
             removeOldFaces( lightFaces );
 
-            buildNewFaces( lightPoint, horizonEdges );
+            newFaces = buildNewFaces( lightPoint, horizonEdges );
 
-            reassignPoints( _.flatten( _.pluck( lightFaces, 'points' ) ) );
+            convexHull.computeOutwardFaceNormals();
+
+            return newFaces;
 
         }
 
@@ -496,14 +514,16 @@ var Quickhull = function () {
 
         function buildNewFaces ( lightPoint, horizonEdges ) {
 
-            var context, pointIndex;
+            var context, pointIndex, newFaces;
 
             convexHull.vertices.push( lightPoint );
             pointIndex = convexHull.vertices.length - 1;
 
             context = { 'pointIndex': pointIndex, 'convexHull': convexHull };
 
-            _.each( horizonEdges, buildFace, context );
+            newFaces = _.map( horizonEdges, buildFace, context );
+
+            return newFaces;
 
         }
 
@@ -516,6 +536,8 @@ var Quickhull = function () {
             face = new QFace( edge.v1, edge.v2, pointIndex );
 
             convexHull.faces.push( face );
+
+            return face;
 
         }
 
@@ -531,9 +553,13 @@ var Quickhull = function () {
 
         }
 
-        function reassignPoints ( points ) {
+        function reassignPoints ( points, newFaces ) {
 
-            _.each( points, assign_to_face );
+            var context = { 'faces': newFaces };
+
+            _.each( points, unassign_from_face );
+
+            _.each( points, assign_to_face, context );
         }
 
 }.call( this );
