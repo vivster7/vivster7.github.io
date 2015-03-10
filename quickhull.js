@@ -1,5 +1,9 @@
 // Quickhull implementation in THREE.js
 //
+//
+// Given a set of points, this algorithm will construct
+// an outer shell (convex hull) in O( N log N).
+//
 // Algorithm details: http://thomasdiewald.com/blog/?p=1888
 
 var Quickhull = function () {
