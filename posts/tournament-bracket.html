@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shareable Bracket Maker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for bracket lines and layout */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        .bracket {
+            display: flex;
+            overflow-x: auto; /* Allow horizontal scrolling for large brackets */
+            padding: 20px;
+            background-color: #ffffff; /* White background for bracket area */
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .round {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around; /* Distribute matches evenly */
+            flex-shrink: 0; /* Prevent rounds from shrinking */
+            min-width: 180px; /* Minimum width for a round */
+            margin-right: 40px; /* Space between rounds */
+            position: relative;
+        }
+        .round:last-child {
+            margin-right: 0;
+        }
+        .match {
+            position: relative;
+            margin-bottom: 30px; /* Space between matches vertically */
+            padding-left: 10px; /* Space for potential connector lines */
+            min-height: 70px; /* Ensure space even for byes */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center participants vertically */
+        }
+         /* Add space between matches in the same round */
+        .round > .match + .match {
+             margin-top: 40px;
+        }
+
+        .participant {
+            display: block;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db; /* Tailwind gray-300 */
+            background-color: #f9fafb; /* Tailwind gray-50 */
+            border-radius: 4px;
+            margin: 2px 0;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            font-size: 0.875rem; /* text-sm */
+            min-height: 36px; /* Ensure consistent height */
+            display: flex;
+            align-items: center;
+        }
+        .participant.winner {
+            background-color: #d1fae5; /* Tailwind green-100 */
+            border-color: #6ee7b7; /* Tailwind green-300 */
+            font-weight: 500; /* Medium font weight for winner */
+        }
+        .participant.clickable:hover {
+            background-color: #e5e7eb; /* Tailwind gray-200 */
+        }
+        .participant.bye {
+            font-style: italic;
+            color: #6b7280; /* Tailwind gray-500 */
+            cursor: default;
+            background-color: transparent;
+            border: none;
+            padding-left: 0;
+        }
+        .participant-name {
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Connector lines (basic implementation) */
+        .match::after {
+            content: '';
+            position: absolute;
+            right: -25px; /* Position line between rounds */
+            top: 50%;
+            width: 25px; /* Line length */
+            height: 2px;
+            background-color: #9ca3af; /* Tailwind gray-400 */
+            transform: translateY(-50%);
+        }
+        /* Don't draw line after final match */
+        .round:last-child .match::after {
+            display: none;
+        }
+        .match::before {
+            content: '';
+            position: absolute;
+            left: -15px; /* Position connector hook */
+            top: 25%; /* Start point of vertical line */
+            width: 2px;
+            height: 50%; /* Vertical line height */
+            background-color: #9ca3af; /* Tailwind gray-400 */
+        }
+         /* Adjust connector for first and last match in a pair */
+        .match:nth-child(odd)::before {
+             top: 50%;
+             height: 50%;
+        }
+        .match:nth-child(even)::before {
+             top: 0;
+             height: 50%;
+        }
+        /* Hide connector for the first round */
+        .round:first-child .match::before {
+            display: none;
+        }
+        /* Hide connector if only one match in round (final) */
+        .round .match:only-child::before {
+             display: none;
+        }
+        /* Hide connector lines for byes */
+        .match.has-bye::before,
+        .match.has-bye::after {
+            /* display: none; */ /* Keep line for visual consistency */
+            background-color: #e5e7eb; /* Lighter color for bye connectors */
+        }
+        .match.is-complete .participant:not(.winner) {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        .final-winner-container {
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             margin-top: 20px;
+             padding: 15px;
+             background-color: #e0f2fe; /* Tailwind sky-100 */
+             border: 1px solid #7dd3fc; /* Tailwind sky-300 */
+             border-radius: 8px;
+        }
+        .final-winner-label {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 700; /* bold */
+            color: #0c4a6e; /* Tailwind sky-800 */
+            margin-bottom: 5px;
+        }
+        .final-winner-name {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 700; /* bold */
+            color: #0369a1; /* Tailwind sky-700 */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .round {
+                min-width: 150px;
+                margin-right: 20px;
+            }
+            .match::after {
+                right: -15px;
+                width: 15px;
+            }
+            .participant {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-800">Shareable Bracket Maker</h1>
+
+        <div id="setupSection" class="mb-8">
+            <h2 class="text-xl font-semibold mb-3 text-gray-700">Setup Bracket</h2>
+            <div class="mb-4">
+                <label for="participantsInput" class="block text-sm font-medium text-gray-600 mb-1">Enter Participants (one per line):</label>
+                <textarea id="participantsInput" rows="8" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Team Alpha&#10;Team Beta&#10;Charlie Team&#10;..."></textarea>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+                 <button id="generateButton" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out shadow">Generate Bracket</button>
+                 <button id="resetButton" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out shadow">Reset / New Bracket</button>
+            </div>
+             <p class="text-xs text-gray-500 mt-2">Bracket state is saved in the URL. Copy the URL to share.</p>
+        </div>
+
+        <div id="bracketDisplay" class="hidden">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Bracket</h2>
+            <div id="bracketContainer" class="bracket">
+                </div>
+             <div id="finalWinnerContainer" class="final-winner-container hidden mt-6">
+                 <span class="final-winner-label">🏆 Winner 🏆</span>
+                 <span id="finalWinnerName" class="final-winner-name"></span>
+             </div>
+        </div>
+
+        <div id="messageArea" class="mt-4 text-center text-red-600 font-medium"></div>
+
+    </div>
+
+    <script>
+        // --- Constants ---
+        const PARTICIPANT_BYE = 'BYE'; // Represents a bye
+
+        // --- DOM Elements ---
+        const setupSection = document.getElementById('setupSection');
+        const bracketDisplay = document.getElementById('bracketDisplay');
+        const participantsInput = document.getElementById('participantsInput');
+        const generateButton = document.getElementById('generateButton');
+        const resetButton = document.getElementById('resetButton');
+        const bracketContainer = document.getElementById('bracketContainer');
+        const messageArea = document.getElementById('messageArea');
+        const finalWinnerContainer = document.getElementById('finalWinnerContainer');
+        const finalWinnerName = document.getElementById('finalWinnerName');
+
+        // --- State ---
+        let bracketState = {
+            participants: [], // Original list of participants
+            rounds: [],       // Array of rounds, each round is an array of matches
+            initialParticipants: [] // Participants including potential byes for round 1
+        };
+
+        // --- Initialization ---
+        window.onload = () => {
+            loadStateFromUrl(); // Attempt to load state from URL first
+            generateButton.addEventListener('click', handleGenerateBracket);
+            resetButton.addEventListener('click', handleReset);
+        };
+
+        // --- State Management (URL) ---
+
+        /**
+         * Encodes the current bracket state into a Base64 string.
+         * @returns {string} Base64 encoded state.
+         */
+        function encodeState() {
+            try {
+                const stateString = JSON.stringify(bracketState);
+                return btoa(stateString); // Base64 encode
+            } catch (error) {
+                console.error("Error encoding state:", error);
+                displayMessage("Error saving bracket state.");
+                return '';
+            }
+        }
+
+        /**
+         * Decodes the state from a Base64 string.
+         * @param {string} encodedState Base64 encoded state string.
+         * @returns {object | null} Decoded state object or null if error.
+         */
+        function decodeState(encodedState) {
+            try {
+                const stateString = atob(encodedState); // Base64 decode
+                return JSON.parse(stateString);
+            } catch (error) {
+                console.error("Error decoding state:", error);
+                displayMessage("Error loading bracket state from URL. It might be invalid.");
+                return null;
+            }
+        }
+
+        /**
+         * Updates the URL hash with the encoded state without reloading the page.
+         */
+        function updateUrl() {
+            const encoded = encodeState();
+            if (encoded) {
+                // Use replaceState to avoid polluting browser history too much
+                history.replaceState(null, '', `#${encoded}`);
+            }
+        }
+
+        /**
+         * Loads the bracket state from the URL hash on page load.
+         */
+        function loadStateFromUrl() {
+            if (window.location.hash && window.location.hash.length > 1) {
+                const encodedState = window.location.hash.substring(1);
+                const decoded = decodeState(encodedState);
+                if (decoded && decoded.rounds && decoded.rounds.length > 0) {
+                    bracketState = decoded;
+                    // Ensure participants list is populated if loading state
+                    if (!bracketState.participants || bracketState.participants.length === 0) {
+                        bracketState.participants = bracketState.initialParticipants?.filter(p => p !== PARTICIPANT_BYE) || [];
+                    }
+                     // Restore participant input text area for reference
+                    participantsInput.value = bracketState.participants.join('\n');
+                    renderBracket();
+                    setupSection.classList.add('hidden'); // Hide setup
+                    bracketDisplay.classList.remove('hidden'); // Show bracket
+                    displayMessage(""); // Clear any previous messages
+                } else {
+                    // Invalid state in URL, clear hash and show setup
+                    history.replaceState(null, '', window.location.pathname + window.location.search);
+                    setupSection.classList.remove('hidden');
+                    bracketDisplay.classList.add('hidden');
+                }
+            } else {
+                 // No hash, show setup
+                 setupSection.classList.remove('hidden');
+                 bracketDisplay.classList.add('hidden');
+            }
+        }
+
+        // --- Bracket Logic ---
+
+        /**
+         * Shuffles an array in place using the Fisher-Yates algorithm.
+         * @param {Array} array The array to shuffle.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            }
+        }
+
+        /**
+         * Calculates the next power of 2 greater than or equal to n.
+         * @param {number} n The number of participants.
+         * @returns {number} The next power of 2.
+         */
+        function nextPowerOf2(n) {
+            if (n <= 0) return 1; // Handle edge case
+            let power = 1;
+            while (power < n) {
+                power *= 2;
+            }
+            return power;
+        }
+
+        /**
+         * Handles the "Generate Bracket" button click.
+         */
+        function handleGenerateBracket() {
+            const names = participantsInput.value.split('\n')
+                .map(name => name.trim())
+                .filter(name => name.length > 0); // Get non-empty names
+
+            if (names.length < 2) {
+                displayMessage("Please enter at least 2 participants.");
+                return;
+            }
+
+            displayMessage(""); // Clear previous messages
+            bracketState.participants = [...names]; // Store original participants
+
+            // Shuffle participants for random seeding
+            shuffleArray(names);
+
+            // Calculate necessary size and byes
+            const totalSlots = nextPowerOf2(names.length);
+            const byes = totalSlots - names.length;
+
+            // Create the initial list with participants and byes
+            const initialParticipants = [...names];
+            for (let i = 0; i < byes; i++) {
+                // Distribute byes somewhat evenly - insert after every few participants
+                const insertIndex = Math.min(initialParticipants.length, Math.floor((i + 1) * (totalSlots / (byes + 1))));
+                 initialParticipants.splice(insertIndex, 0, PARTICIPANT_BYE);
+            }
+             bracketState.initialParticipants = [...initialParticipants]; // Store participants including byes
+
+            // --- Build the bracket structure ---
+            bracketState.rounds = [];
+            let currentRoundParticipants = [...initialParticipants];
+            let roundIndex = 0;
+
+            while (currentRoundParticipants.length > 1) {
+                const round = [];
+                const nextRoundParticipants = [];
+                const matchCount = currentRoundParticipants.length / 2;
+
+                for (let i = 0; i < matchCount; i++) {
+                    const p1 = currentRoundParticipants[i * 2];
+                    const p2 = currentRoundParticipants[i * 2 + 1];
+                    const matchId = `r${roundIndex + 1}m${i + 1}`;
+                    let winner = null;
+                    let hasBye = false;
+
+                    // Handle byes automatically advancing the other participant
+                    if (p1 === PARTICIPANT_BYE) {
+                        winner = p2;
+                        hasBye = true;
+                    } else if (p2 === PARTICIPANT_BYE) {
+                        winner = p1;
+                        hasBye = true;
+                    }
+
+                    round.push({
+                        p1: p1,
+                        p2: p2,
+                        winner: winner, // Winner is null initially unless it's a bye
+                        id: matchId,
+                        hasBye: hasBye
+                    });
+
+                    // Add the winner (or null if no winner yet) to the next round's participants
+                    nextRoundParticipants.push(winner);
+                }
+                bracketState.rounds.push(round);
+                currentRoundParticipants = nextRoundParticipants;
+                roundIndex++;
+            }
+
+            // Initial render and URL update
+            renderBracket();
+            setupSection.classList.add('hidden'); // Hide setup
+            bracketDisplay.classList.remove('hidden'); // Show bracket
+            updateUrl(); // Save initial state to URL
+        }
+
+        /**
+         * Handles the "Reset / New Bracket" button click.
+         */
+        function handleReset() {
+            bracketState = { participants: [], rounds: [], initialParticipants: [] };
+            participantsInput.value = ''; // Clear input
+            bracketContainer.innerHTML = ''; // Clear display
+            finalWinnerContainer.classList.add('hidden'); // Hide winner display
+            setupSection.classList.remove('hidden'); // Show setup
+            bracketDisplay.classList.add('hidden'); // Hide bracket
+            displayMessage(""); // Clear messages
+            // Clear the URL hash
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+
+        /**
+         * Handles clicking on a participant to select them as the winner of a match.
+         * @param {number} roundIndex The index of the round.
+         * @param {number} matchIndex The index of the match within the round.
+         * @param {1 | 2} participantNumber 1 for p1, 2 for p2.
+         */
+        function selectWinner(roundIndex, matchIndex, participantNumber) {
+            const match = bracketState.rounds[roundIndex][matchIndex];
+
+            // Ignore clicks if match is already decided or involves a bye
+            if (match.winner || match.p1 === PARTICIPANT_BYE || match.p2 === PARTICIPANT_BYE) {
+                return;
+            }
+
+            const winner = (participantNumber === 1) ? match.p1 : match.p2;
+
+            // Update the current match
+            match.winner = winner;
+
+            // Advance the winner to the next round
+            const nextRoundIndex = roundIndex + 1;
+            if (nextRoundIndex < bracketState.rounds.length) {
+                const nextMatchIndex = Math.floor(matchIndex / 2);
+                const nextMatch = bracketState.rounds[nextRoundIndex][nextMatchIndex];
+
+                // Determine if the winner should be p1 or p2 in the next match
+                if (matchIndex % 2 === 0) { // Winner goes to p1 slot
+                    nextMatch.p1 = winner;
+                } else { // Winner goes to p2 slot
+                    nextMatch.p2 = winner;
+                }
+
+                // If the next match now has both participants due to a bye advancing earlier,
+                // check if one of *those* was a bye.
+                 if(nextMatch.p1 && nextMatch.p2){
+                     if (nextMatch.p1 === PARTICIPANT_BYE) {
+                         nextMatch.winner = nextMatch.p2;
+                         advanceWinnerFurther(nextRoundIndex, nextMatchIndex, nextMatch.winner);
+                     } else if (nextMatch.p2 === PARTICIPANT_BYE) {
+                         nextMatch.winner = nextMatch.p1;
+                          advanceWinnerFurther(nextRoundIndex, nextMatchIndex, nextMatch.winner);
+                     }
+                 }
+
+            } else {
+                 // This was the final match
+                 displayFinalWinner(winner);
+            }
+
+
+            // Re-render and update URL
+            renderBracket();
+            updateUrl();
+        }
+
+        /**
+         * Recursively advances a winner if their next match opponent was determined by a bye.
+         * Needed because setting a winner might complete a match further down the line instantly
+         * if the opponent slot was already filled by a bye.
+         */
+        function advanceWinnerFurther(roundIndex, matchIndex, winner) {
+             const nextRoundIndex = roundIndex + 1;
+             if (nextRoundIndex < bracketState.rounds.length) {
+                 const nextMatchIndex = Math.floor(matchIndex / 2);
+                 const nextMatch = bracketState.rounds[nextRoundIndex][nextMatchIndex];
+                 if (matchIndex % 2 === 0) {
+                     nextMatch.p1 = winner;
+                 } else {
+                     nextMatch.p2 = winner;
+                 }
+                 // Check again if this completion resolves a bye in the *next* round
+                 if(nextMatch.p1 && nextMatch.p2){
+                     if (nextMatch.p1 === PARTICIPANT_BYE) {
+                         nextMatch.winner = nextMatch.p2;
+                         advanceWinnerFurther(nextRoundIndex, nextMatchIndex, nextMatch.winner);
+                     } else if (nextMatch.p2 === PARTICIPANT_BYE) {
+                         nextMatch.winner = nextMatch.p1;
+                         advanceWinnerFurther(nextRoundIndex, nextMatchIndex, nextMatch.winner);
+                     }
+                 }
+             } else {
+                 // This advancement reached the final
+                 displayFinalWinner(winner);
+             }
+        }
+
+
+        /**
+         * Displays the final winner below the bracket.
+         * @param {string} winnerName The name of the final winner.
+         */
+         function displayFinalWinner(winnerName) {
+            if (winnerName && winnerName !== PARTICIPANT_BYE) {
+                finalWinnerName.textContent = winnerName;
+                finalWinnerContainer.classList.remove('hidden');
+            } else {
+                 finalWinnerContainer.classList.add('hidden');
+            }
+         }
+
+        // --- Rendering ---
+
+        /**
+         * Renders the entire bracket structure based on the current state.
+         */
+        function renderBracket() {
+            bracketContainer.innerHTML = ''; // Clear previous render
+            let overallWinner = null;
+
+            bracketState.rounds.forEach((round, roundIndex) => {
+                const roundElement = document.createElement('div');
+                roundElement.classList.add('round');
+                roundElement.dataset.roundIndex = roundIndex;
+
+                round.forEach((match, matchIndex) => {
+                    const matchElement = document.createElement('div');
+                    matchElement.classList.add('match');
+                    matchElement.dataset.matchId = match.id;
+                    if (match.hasBye) {
+                        matchElement.classList.add('has-bye');
+                    }
+                     if (match.winner) {
+                        matchElement.classList.add('is-complete');
+                    }
+
+                    // Participant 1
+                    const p1Element = createParticipantElement(match.p1, match, roundIndex, matchIndex, 1);
+                    matchElement.appendChild(p1Element);
+
+                    // Participant 2
+                    const p2Element = createParticipantElement(match.p2, match, roundIndex, matchIndex, 2);
+                    matchElement.appendChild(p2Element);
+
+                    roundElement.appendChild(matchElement);
+
+                     // Check if this is the final match and has a winner
+                    if (roundIndex === bracketState.rounds.length - 1 && match.winner) {
+                        overallWinner = match.winner;
+                    }
+                });
+                bracketContainer.appendChild(roundElement);
+            });
+
+             // Display final winner if determined
+             displayFinalWinner(overallWinner);
+        }
+
+        /**
+         * Creates a DOM element for a participant within a match.
+         * @param {string | null} name Participant name or null or BYE.
+         * @param {object} match The match object.
+         * @param {number} roundIndex The index of the round.
+         * @param {number} matchIndex The index of the match.
+         * @param {1 | 2} participantNumber 1 for p1, 2 for p2.
+         * @returns {HTMLElement} The participant span element.
+         */
+        function createParticipantElement(name, match, roundIndex, matchIndex, participantNumber) {
+            const element = document.createElement('span');
+            element.classList.add('participant');
+            const nameSpan = document.createElement('span');
+            nameSpan.classList.add('participant-name');
+            nameSpan.textContent = name || '---'; // Display '---' if participant not yet decided
+            element.appendChild(nameSpan);
+
+
+            if (name === PARTICIPANT_BYE) {
+                element.classList.add('bye');
+                nameSpan.textContent = 'BYE';
+            } else if (name) {
+                // Add winner class if applicable
+                if (match.winner === name) {
+                    element.classList.add('winner');
+                }
+                // Add click handler only if the match isn't decided and this participant isn't a bye
+                if (!match.winner && name !== PARTICIPANT_BYE && match.p1 && match.p2 && match.p1 !== PARTICIPANT_BYE && match.p2 !== PARTICIPANT_BYE) {
+                    element.classList.add('clickable');
+                    element.onclick = () => selectWinner(roundIndex, matchIndex, participantNumber);
+                    element.title = `Click to select ${name} as winner`; // Tooltip
+                }
+            } else {
+                 element.classList.add('empty'); // Style for undecided slots
+            }
+
+            return element;
+        }
+
+        /**
+         * Displays a message to the user.
+         * @param {string} message The message text.
+         */
+        function displayMessage(message) {
+            messageArea.textContent = message;
+        }
+
+    </script>
+
+</body>
+</html>
