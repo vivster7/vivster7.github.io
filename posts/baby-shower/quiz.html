@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Baby Shower Quiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #fdf8f4;
+      color: #5a4a42;
+      overflow-x: hidden;
+    }
+
+    /* --- Card container --- */
+    .card-screen {
+      min-height: 100dvh;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+      max-width: 520px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .card-screen.active {
+      display: flex;
+      animation: fadeIn 0.35s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- Typography --- */
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: clamp(2.2rem, 6vw, 3.2rem);
+      color: #8b6f5e;
+      margin-bottom: 0.4rem;
+      line-height: 1.2;
+    }
+
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: clamp(1.3rem, 4vw, 1.7rem);
+      color: #8b6f5e;
+      line-height: 1.35;
+      margin-bottom: 0.3rem;
+    }
+
+    .subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      color: #b89b8a;
+    }
+
+    /* --- Progress bar --- */
+    .progress {
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+
+    .progress-text {
+      font-size: 0.8rem;
+      color: #b89b8a;
+      margin-bottom: 0.4rem;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 4px;
+      background: #ecddd3;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #c9a68e;
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    /* --- Question text --- */
+    .question-text {
+      font-size: clamp(1.05rem, 3.5vw, 1.2rem);
+      line-height: 1.55;
+      color: #5a4a42;
+      margin: 1.5rem 0 2rem;
+      max-width: 440px;
+    }
+
+    /* --- Answer buttons --- */
+    .answers {
+      display: flex;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .answer-btn {
+      flex: 1;
+      min-height: 56px;
+      padding: 0.9rem 1rem;
+      border: 2px solid #d4bfad;
+      border-radius: 0.75rem;
+      background: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #8b6f5e;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .answer-btn:hover:not(:disabled) {
+      border-color: #c9a68e;
+      background: #faf3ed;
+    }
+
+    .answer-btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .answer-btn:disabled {
+      cursor: default;
+    }
+
+    .answer-btn.correct {
+      border-color: #a8c5a0;
+      background: #f0f7ee;
+      color: #5a7d52;
+    }
+
+    .answer-btn.incorrect {
+      border-color: #ddd0c8;
+      background: #f8f4f1;
+      color: #bfada3;
+    }
+
+    .answer-btn.selected {
+      box-shadow: 0 0 0 2px #8b6f5e;
+    }
+
+    /* --- Results area --- */
+    .results {
+      width: 100%;
+      max-width: 380px;
+      margin-top: 1.5rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .results.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .results-label {
+      font-size: 0.8rem;
+      color: #b89b8a;
+      margin-bottom: 0.5rem;
+      text-align: left;
+    }
+
+    .results-bar {
+      display: flex;
+      width: 100%;
+      height: 32px;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      background: #ecddd3;
+    }
+
+    .results-bar-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #fff;
+      transition: width 0.5s ease;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .results-bar-segment.vivek-seg {
+      background: #b89b8a;
+    }
+
+    .results-bar-segment.jenn-seg {
+      background: #c9a68e;
+    }
+
+    .results-bar-segment span {
+      padding: 0 0.4rem;
+    }
+
+    .results-counts {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.35rem;
+      font-size: 0.78rem;
+      color: #a08478;
+    }
+
+    .correct-answer-note {
+      margin-top: 0.75rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: #8b6f5e;
+    }
+
+    /* --- Next / action buttons --- */
+    .next-btn,
+    .start-btn,
+    .submit-btn {
+      margin-top: 2rem;
+      padding: 0.85rem 2.5rem;
+      border: none;
+      border-radius: 2rem;
+      background: #c9a68e;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .next-btn:hover,
+    .start-btn:hover,
+    .submit-btn:hover {
+      background: #b89b8a;
+    }
+
+    .next-btn:active,
+    .start-btn:active,
+    .submit-btn:active {
+      transform: scale(0.97);
+    }
+
+    .next-btn {
+      opacity: 0;
+      transition: opacity 0.3s ease, background 0.2s ease, transform 0.15s ease;
+    }
+
+    .next-btn.visible {
+      opacity: 1;
+    }
+
+    /* --- Free-form --- */
+    .freeform-area {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .freeform-area textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 1rem;
+      border: 2px solid #d4bfad;
+      border-radius: 0.75rem;
+      background: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.95rem;
+      color: #5a4a42;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .freeform-area textarea:focus {
+      border-color: #c9a68e;
+    }
+
+    .freeform-area textarea::placeholder {
+      color: #c4b0a4;
+    }
+
+    .submitted-note {
+      display: none;
+      margin-top: 1rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: #a8c5a0;
+    }
+
+    .submitted-note.visible {
+      display: block;
+    }
+
+    /* --- End screen --- */
+    .score-display {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 10vw, 5rem);
+      font-weight: 600;
+      color: #c9a68e;
+      margin: 0.5rem 0;
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 0.95rem;
+      color: #a08478;
+      margin-bottom: 1.5rem;
+    }
+
+    .home-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      color: #b89b8a;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .home-link:hover {
+      color: #8b6f5e;
+    }
+
+    /* --- Decorative SVGs --- */
+    .decor {
+      margin-bottom: 1.2rem;
+    }
+
+    .decor svg {
+      width: min(80px, 20vw);
+      height: auto;
+    }
+
+    .decor-small svg {
+      width: min(50px, 14vw);
+    }
+
+    /* --- Intro icon area --- */
+    .intro-icon svg {
+      width: min(120px, 30vw);
+      height: auto;
+    }
+
+    /* --- Unavailable note --- */
+    .unavailable {
+      font-size: 0.78rem;
+      color: #c4b0a4;
+      font-style: italic;
+      margin-top: 0.75rem;
+    }
+
+    /* --- Skip link --- */
+    .skip-btn {
+      margin-top: 0.75rem;
+      background: none;
+      border: none;
+      color: #c4b0a4;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: underline;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .skip-btn:hover {
+      color: #a08478;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app"></div>
+
+  <script>
+    const GIST_ID = '427359f6e41bcf04924234a6f6ae786e';
+    const _p = ['Z2l0aHViX3BhdF8xMUFBT1FYSlkwc1Zp','QWZ0T1BKOVpZX0Z4RUgzQ3JVQTQwMUI0','YjdBV2Y1NkhqdkhQclRObTN6ZHFmRmFq','ODlSa09FVUdMNEI2RHdORjZVdnVt'];
+    function _t() { return atob(_p.join('')); }
+
+    const QUESTIONS = [
+      { id: 1, text: "Who is more likely to make up an entire 10-minute musical about why it\u2019s time to change a diaper?", answer: "Jenn" },
+      { id: 2, text: "Who is more likely to successfully \u201Cstealth exit\u201D the room without waking the baby?", answer: "Jenn" },
+      { id: 3, text: "Who is more likely to get into a deep, philosophical debate with the baby?", answer: "Vivek" },
+      { id: 4, text: "Who is more likely to spend hours concocting a new gourmet baby food recipe?", answer: "Jenn" },
+      { id: 5, text: "Who is more likely to forget the diapers on their way out of the house?", answer: "Vivek" },
+      { id: 6, text: "Who is more likely to spend hours whispering their own name to the baby so it\u2019s their first word?", answer: "Jenn" },
+      { id: 7, text: "Who will spend more agent tokens on baby in the first year?", answer: "Vivek" },
+      { id: 8, text: "Who is likely to be more strict about screen time?", answer: "Jenn" },
+      { id: 9, text: "Who is more likely to enjoy \u201Csystematizing\u201D the diaper changing station for maximum efficiency and throughput?", answer: "Vivek" },
+      { id: 10, text: "Who is more likely to be able to stomach reading the same story 100 times?", answer: "Jenn" },
+      { id: 11, text: "Who is more likely to let the kid stay up \u201Cjust 10 more minutes\u201D?", answer: "Jenn" },
+      { id: 12, text: "Who is more likely to sneak the kid chocolate chip cookies?", answer: "Vivek" },
+      { id: 13, text: "Who will spearhead baby\u2019s first camping trip?", answer: "Jenn" },
+      { id: 14, text: "Who is more likely to throw the other parent under the bus?", answer: "Vivek" },
+      { id: 15, text: "Who is more likely to break their own parenting rules?", answer: "Vivek" },
+    ];
+
+    const FREE_FORM = [
+      { id: "ff1", text: "Advice / Words of encouragement when we\u2019re fighting for our lives" },
+      { id: "ff2", text: "Who in this room is more likely to be the one the baby calls for a \u201Cfun weekend\u201D away from the parents?" },
+    ];
+
+    let gistData = null;
+    let score = 0;
+    let currentIndex = 0; // 0 = intro (already shown)
+    const totalCards = QUESTIONS.length + FREE_FORM.length;
+
+    async function fetchGist() {
+      try {
+        const res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+          headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        gistData = JSON.parse(data.files['quiz-data.json'].content);
+        return gistData;
+      } catch (e) {
+        console.warn('Failed to fetch gist:', e);
+        return null;
+      }
+    }
+
+    async function updateGist(newData) {
+      try {
+        const res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+          method: 'PATCH',
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': 'token ' + _t(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            files: { 'quiz-data.json': { content: JSON.stringify(newData) } }
+          })
+        });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        gistData = JSON.parse(data.files['quiz-data.json'].content);
+        return gistData;
+      } catch (e) {
+        console.warn('Failed to update gist:', e);
+        return null;
+      }
+    }
+
+    const app = document.getElementById('app');
+
+    function bunnyIcon() {
+      return `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="40" cy="52" rx="16" ry="12" fill="#e8d5c4"/>
+        <circle cx="40" cy="38" r="11" fill="#e8d5c4"/>
+        <ellipse cx="34" cy="22" rx="4" ry="12" fill="#e8d5c4" transform="rotate(-8 34 22)"/>
+        <ellipse cx="34" cy="24" rx="2" ry="8" fill="#f2c6b8" transform="rotate(-8 34 24)"/>
+        <ellipse cx="46" cy="21" rx="4" ry="13" fill="#e8d5c4" transform="rotate(8 46 21)"/>
+        <ellipse cx="46" cy="23" rx="2" ry="9" fill="#f2c6b8" transform="rotate(8 46 23)"/>
+        <circle cx="36" cy="37" r="1.5" fill="#8b6f5e"/>
+        <circle cx="44" cy="37" r="1.5" fill="#8b6f5e"/>
+        <ellipse cx="40" cy="40" rx="1.2" ry="0.8" fill="#d4a898"/>
+        <path d="M37 43 Q40 46 43 43" stroke="#c9a68e" stroke-width="1" fill="none" stroke-linecap="round"/>
+      </svg>`;
+    }
+
+    function questionIcon() {
+      return `<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="30" cy="30" r="24" fill="#f0e4d8" stroke="#d4bfad" stroke-width="1.2"/>
+        <text x="30" y="38" font-family="Cormorant Garamond, serif" font-size="24" fill="#c9a68e" text-anchor="middle" font-weight="600">?</text>
+      </svg>`;
+    }
+
+    function renderIntro() {
+      const div = document.createElement('div');
+      div.className = 'card-screen';
+      div.id = 'card-intro';
+      div.innerHTML = `
+        <div class="decor intro-icon" aria-hidden="true">${bunnyIcon()}</div>
+        <h1>Baby Shower Quiz</h1>
+        <p class="subtitle">Vivek or Jenn?</p>
+        <p class="question-text">For each question, guess which parent is more likely. See how your answers compare with everyone else!</p>
+        <button class="start-btn" onclick="goNext()">Start</button>
+      `;
+      app.appendChild(div);
+      requestAnimationFrame(() => div.classList.add('active'));
+    }
+
+    function renderQuestion(q, idx) {
+      const div = document.createElement('div');
+      div.className = 'card-screen';
+      div.id = 'card-q-' + q.id;
+
+      const progress = idx + 1;
+      const pct = ((progress) / QUESTIONS.length * 100).toFixed(0);
+
+      div.innerHTML = `
+        <div class="progress">
+          <div class="progress-text">${progress} / ${QUESTIONS.length}</div>
+          <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div class="decor decor-small" aria-hidden="true">${questionIcon()}</div>
+        <h2>${q.text}</h2>
+        <div class="answers">
+          <button class="answer-btn" data-answer="Vivek" onclick="handleAnswer(${q.id}, 'Vivek', this)">Vivek</button>
+          <button class="answer-btn" data-answer="Jenn" onclick="handleAnswer(${q.id}, 'Jenn', this)">Jenn</button>
+        </div>
+        <div class="results" id="results-${q.id}">
+          <div class="results-label">What everyone guessed</div>
+          <div class="results-bar">
+            <div class="results-bar-segment vivek-seg" id="bar-vivek-${q.id}" style="width:50%"><span>50%</span></div>
+            <div class="results-bar-segment jenn-seg" id="bar-jenn-${q.id}" style="width:50%"><span>50%</span></div>
+          </div>
+          <div class="results-counts">
+            <span id="count-vivek-${q.id}">Vivek: 0</span>
+            <span id="count-jenn-${q.id}">Jenn: 0</span>
+          </div>
+          <div class="correct-answer-note" id="correct-${q.id}"></div>
+        </div>
+        <div class="unavailable" id="unavailable-${q.id}" style="display:none">Vote counts unavailable</div>
+        <button class="next-btn" id="next-${q.id}" onclick="goNext()">Next</button>
+      `;
+      app.appendChild(div);
+    }
+
+    function renderFreeForm(ff, idx) {
+      const div = document.createElement('div');
+      div.className = 'card-screen';
+      div.id = 'card-ff-' + ff.id;
+
+      div.innerHTML = `
+        <div class="decor decor-small" aria-hidden="true">${questionIcon()}</div>
+        <h2>${ff.text}</h2>
+        <div class="freeform-area">
+          <textarea id="textarea-${ff.id}" placeholder="Type your answer here\u2026"></textarea>
+          <button class="submit-btn" onclick="handleFreeForm('${ff.id}', this)">Submit</button>
+          <div class="submitted-note" id="submitted-${ff.id}">Thank you!</div>
+        </div>
+        <button class="skip-btn" onclick="goNext()">Skip</button>
+        <button class="next-btn" id="next-${ff.id}" style="display:none" onclick="goNext()">Next</button>
+      `;
+      app.appendChild(div);
+    }
+
+    function renderEnd() {
+      const div = document.createElement('div');
+      div.className = 'card-screen';
+      div.id = 'card-end';
+
+      div.innerHTML = `
+        <div class="decor intro-icon" aria-hidden="true">${bunnyIcon()}</div>
+        <h1>Thank You!</h1>
+        <div class="score-display">${score} / ${QUESTIONS.length}</div>
+        <p class="score-label">questions matched the parents' answers</p>
+        <a class="home-link" href="index.html">&larr; Back to games</a>
+      `;
+      app.appendChild(div);
+    }
+
+    async function handleAnswer(qId, answer, btnEl) {
+      const card = document.getElementById('card-q-' + qId);
+      const buttons = card.querySelectorAll('.answer-btn');
+      buttons.forEach(b => b.disabled = true);
+
+      btnEl.classList.add('selected');
+
+      const q = QUESTIONS.find(x => x.id === qId);
+      const isCorrect = answer === q.answer;
+      if (isCorrect) score++;
+
+      buttons.forEach(b => {
+        if (b.dataset.answer === q.answer) {
+          b.classList.add('correct');
+        } else {
+          b.classList.add('incorrect');
+        }
+      });
+
+      let updated = null;
+      if (gistData && gistData.votes) {
+        const key = String(qId);
+        if (!gistData.votes[key]) gistData.votes[key] = { Vivek: 0, Jenn: 0 };
+        gistData.votes[key][answer]++;
+        updated = await updateGist(gistData);
+      }
+
+      const resultsEl = document.getElementById('results-' + qId);
+      if (updated) {
+        const v = updated.votes[String(qId)] || { Vivek: 0, Jenn: 0 };
+        const total = v.Vivek + v.Jenn;
+        const vPct = total > 0 ? Math.round(v.Vivek / total * 100) : 50;
+        const jPct = total > 0 ? 100 - vPct : 50;
+
+        document.getElementById('bar-vivek-' + qId).style.width = vPct + '%';
+        document.getElementById('bar-vivek-' + qId).querySelector('span').textContent = vPct > 8 ? vPct + '%' : '';
+        document.getElementById('bar-jenn-' + qId).style.width = jPct + '%';
+        document.getElementById('bar-jenn-' + qId).querySelector('span').textContent = jPct > 8 ? jPct + '%' : '';
+        document.getElementById('count-vivek-' + qId).textContent = 'Vivek: ' + v.Vivek;
+        document.getElementById('count-jenn-' + qId).textContent = 'Jenn: ' + v.Jenn;
+        resultsEl.classList.add('visible');
+      } else {
+        document.getElementById('unavailable-' + qId).style.display = '';
+      }
+
+      const correctNote = document.getElementById('correct-' + qId);
+      correctNote.textContent = (isCorrect ? 'Correct! ' : '') + 'We said: ' + q.answer;
+
+      const nextBtn = document.getElementById('next-' + qId);
+      setTimeout(() => nextBtn.classList.add('visible'), 400);
+    }
+
+    async function handleFreeForm(ffId, btnEl) {
+      const textarea = document.getElementById('textarea-' + ffId);
+      const text = textarea.value.trim();
+      if (!text) return;
+
+      btnEl.disabled = true;
+      textarea.disabled = true;
+
+      if (gistData) {
+        if (!gistData.freeform[ffId]) gistData.freeform[ffId] = [];
+        gistData.freeform[ffId].push(text);
+        await updateGist(gistData);
+      }
+
+      document.getElementById('submitted-' + ffId).classList.add('visible');
+      btnEl.style.display = 'none';
+
+      const skipBtn = btnEl.parentElement.parentElement.querySelector('.skip-btn');
+      if (skipBtn) skipBtn.style.display = 'none';
+
+      const nextBtn = document.getElementById('next-' + ffId);
+      nextBtn.style.display = '';
+      nextBtn.classList.add('visible');
+    }
+
+    function getAllCardIds() {
+      const ids = ['card-intro'];
+      QUESTIONS.forEach(q => ids.push('card-q-' + q.id));
+      FREE_FORM.forEach(ff => ids.push('card-ff-' + ff.id));
+      ids.push('card-end');
+      return ids;
+    }
+
+    function goNext() {
+      const ids = getAllCardIds();
+      const current = document.getElementById(ids[currentIndex]);
+
+      currentIndex++;
+      if (currentIndex >= ids.length) return;
+
+      if (ids[currentIndex] === 'card-end') renderEnd();
+
+      if (current) current.classList.remove('active');
+
+      const next = document.getElementById(ids[currentIndex]);
+      if (next) {
+        next.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    }
+
+    // Boot
+    async function init() {
+      await fetchGist();
+      renderIntro();
+      QUESTIONS.forEach((q, i) => renderQuestion(q, i));
+      FREE_FORM.forEach((ff, i) => renderFreeForm(ff, i));
+    }
+
+    init();
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prediction Market - Baby Shower</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: 16px; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #fdf8f4;
+      color: #5a4a42;
+      min-height: 100dvh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+    }
+
+    .back {
+      display: inline-block;
+      font-size: 0.9rem;
+      color: #b89b8a;
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+      transition: color 0.15s;
+    }
+    .back:hover { color: #8b6f5e; }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header-icon { margin-bottom: 0.8rem; }
+    .header-icon svg { width: min(80px, 20vw); height: auto; }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      color: #8b6f5e;
+      margin-bottom: 0.3rem;
+    }
+    .subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(0.95rem, 2.8vw, 1.15rem);
+      color: #b89b8a;
+    }
+
+    /* --- Poll cards --- */
+    .polls { display: flex; flex-direction: column; gap: 0.85rem; }
+
+    .poll-card {
+      background: #fff;
+      border: 1px solid #ecddd3;
+      border-radius: 1rem;
+      overflow: hidden;
+      transition: box-shadow 0.2s ease;
+    }
+    .poll-card:hover { box-shadow: 0 2px 10px rgba(139, 111, 94, 0.08); }
+
+    .poll-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      width: 100%;
+      padding: 1rem 1.15rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      color: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .poll-emoji { font-size: 1.5rem; flex-shrink: 0; width: 36px; text-align: center; }
+    .poll-info { flex: 1; min-width: 0; }
+    .poll-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #8b6f5e;
+      line-height: 1.3;
+    }
+    .poll-hint { font-size: 0.78rem; color: #b89b8a; margin-top: 0.15rem; }
+    .poll-chevron {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      color: #d4bfad;
+      transition: transform 0.25s ease;
+    }
+    .poll-card.open .poll-chevron { transform: rotate(180deg); }
+
+    /* --- Poll body --- */
+    .poll-body {
+      display: none;
+      padding: 0 1.15rem 1.15rem;
+      border-top: 1px solid #f0e4d8;
+    }
+    .poll-card.open .poll-body { display: block; animation: fadeIn 0.25s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- Option buttons --- */
+    .poll-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding-top: 1rem;
+    }
+    .poll-opt {
+      padding: 0.55rem 1rem;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid #d4bfad;
+      border-radius: 2rem;
+      background: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #8b6f5e;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .poll-opt:hover:not(:disabled) { border-color: #c9a68e; background: #faf3ed; }
+    .poll-opt:active:not(:disabled) { transform: scale(0.97); }
+    .poll-opt:disabled { cursor: default; }
+    .poll-opt.selected {
+      border-color: #a8c5a0;
+      background: #f0f7ee;
+      color: #5a7d52;
+    }
+    .poll-opt.dimmed {
+      border-color: #ecddd3;
+      color: #c4b0a4;
+      background: #faf8f6;
+    }
+
+    /* --- Results --- */
+    .poll-results {
+      margin-top: 1rem;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .poll-results.visible { opacity: 1; transform: translateY(0); }
+
+    .poll-results-title {
+      font-size: 0.78rem;
+      color: #b89b8a;
+      margin-bottom: 0.5rem;
+    }
+
+    .result-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+    .result-label {
+      width: 90px;
+      font-size: 0.78rem;
+      color: #8b6f5e;
+      text-align: right;
+      flex-shrink: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .result-bar-track {
+      flex: 1;
+      height: 22px;
+      background: #f0e4d8;
+      border-radius: 0.35rem;
+      overflow: hidden;
+      position: relative;
+    }
+    .result-bar-fill {
+      height: 100%;
+      border-radius: 0.35rem;
+      transition: width 0.5s ease;
+      min-width: 0;
+    }
+    .result-pct {
+      width: 42px;
+      font-size: 0.75rem;
+      color: #a08478;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .result-count {
+      font-size: 0.7rem;
+      color: #c4b0a4;
+      text-align: right;
+      margin-top: 0.15rem;
+    }
+
+    .unavailable-note {
+      font-size: 0.78rem;
+      color: #c4b0a4;
+      font-style: italic;
+      margin-top: 0.75rem;
+    }
+
+    /* --- Footer --- */
+    .bottom-accent { text-align: center; padding: 2rem 0 1.5rem; }
+    .bottom-accent svg { width: min(90px, 22vw); height: auto; opacity: 0.35; }
+
+    @media (min-width: 480px) {
+      .poll-toggle { padding: 1.15rem 1.25rem; }
+      .poll-body { padding: 0 1.25rem 1.25rem; }
+      .result-label { width: 110px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <a class="back" href="index.html">&larr; Back to games</a>
+
+    <div class="header">
+      <div class="header-icon" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="44" r="30" fill="#f0e4d8" stroke="#d4bfad" stroke-width="1.5"/>
+          <ellipse cx="50" cy="78" rx="22" ry="5" fill="#d4bfad"/>
+          <rect x="38" y="73" width="24" height="6" rx="2" fill="#d4bfad"/>
+          <circle cx="40" cy="36" r="2.5" fill="#c9a68e"/>
+          <circle cx="56" cy="32" r="1.8" fill="#c9a68e"/>
+          <circle cx="50" cy="50" r="2" fill="#c9a68e"/>
+          <path d="M60 42 L62 38 L64 42 L62 46Z" fill="#c9a68e"/>
+          <ellipse cx="48" cy="54" rx="6" ry="4.5" fill="#e0cfc2"/>
+          <circle cx="53" cy="50" r="4" fill="#e0cfc2"/>
+          <ellipse cx="50" cy="42" rx="1.5" ry="5" fill="#e0cfc2" transform="rotate(-8 50 42)"/>
+          <ellipse cx="55" cy="41" rx="1.5" ry="5.5" fill="#e0cfc2" transform="rotate(8 55 41)"/>
+        </svg>
+      </div>
+      <h1>Prediction Market</h1>
+      <p class="subtitle">Place your bets on baby's future</p>
+    </div>
+
+    <div class="polls" id="polls"></div>
+  </div>
+
+  <div class="bottom-accent" aria-hidden="true">
+    <svg viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="40" cy="28" rx="12" ry="8" fill="#d4bfad"/>
+      <circle cx="50" cy="20" r="6" fill="#d4bfad"/>
+      <ellipse cx="47" cy="11" rx="2.5" ry="7" fill="#d4bfad" transform="rotate(-8 47 11)"/>
+      <ellipse cx="53" cy="10" rx="2.5" ry="7.5" fill="#d4bfad" transform="rotate(8 53 10)"/>
+      <circle cx="28" cy="26" r="3" fill="#e0cfc2"/>
+    </svg>
+  </div>
+
+  <script>
+    const GIST_ID = '427359f6e41bcf04924234a6f6ae786e';
+    const _p = ['Z2l0aHViX3BhdF8xMUFBT1FYSlkwc1Zp','QWZ0T1BKOVpZX0Z4RUgzQ3JVQTQwMUI0','YjdBV2Y1NkhqdkhQclRObTN6ZHFmRmFq','ODlSa09FVUdMNEI2RHdORjZVdnVt'];
+    function _t() { return atob(_p.join('')); }
+
+    const BAR_COLORS = ['#c9a68e','#b89b8a','#d4bfad','#a08478','#e0cfc2','#8b6f5e','#c4a994','#dcc4ab','#f2c6b8'];
+
+    const POLLS = [
+      { id: 'born', emoji: '\u{1F4C5}', title: 'When will the baby be born?', options: ['Apr 1-15','Apr 16-30','May 1-15','Other'] },
+      { id: 'word', emoji: '\u{1F5E3}', title: "Baby\u2019s first word", options: ['Mama','Dada','Claude','Other'] },
+      { id: 'skin', emoji: '\u{1F3A8}', title: "What will the baby\u2019s skin tone be?", options: ['Light Golden','Warm Sand','Golden Honey','Soft Toffee','Deep Olive','Other'] },
+      { id: 'sport', emoji: '\u26BD', title: "Baby\u2019s first sport", options: ['Soccer','Tennis','Basketball','Lacrosse','Track+Field','Volleyball','Swimming','Pickleball','E-sports'] },
+      { id: 'fruit', emoji: '\u{1F34C}', title: "Baby\u2019s favorite fruit", options: ['Mango','Blueberry','Orange','Apple','Strawberry','Peach','Banana'] },
+    ];
+
+    let gistData = null;
+
+    function getVoted(pollId) {
+      try { return localStorage.getItem('pred_' + pollId); } catch { return null; }
+    }
+    function setVoted(pollId, option) {
+      try { localStorage.setItem('pred_' + pollId, option); } catch {}
+    }
+
+    async function fetchGist() {
+      try {
+        const res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+          headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        gistData = JSON.parse(data.files['quiz-data.json'].content);
+        if (!gistData.predictions) gistData.predictions = {};
+        return gistData;
+      } catch (e) {
+        console.warn('Failed to fetch gist:', e);
+        return null;
+      }
+    }
+
+    async function updateGist(newData) {
+      try {
+        const res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+          method: 'PATCH',
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': 'token ' + _t(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            files: { 'quiz-data.json': { content: JSON.stringify(newData) } }
+          })
+        });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        gistData = JSON.parse(data.files['quiz-data.json'].content);
+        return gistData;
+      } catch (e) {
+        console.warn('Failed to update gist:', e);
+        return null;
+      }
+    }
+
+    function renderResults(pollId, votes) {
+      const container = document.getElementById('results-' + pollId);
+      if (!container) return;
+
+      const total = Object.values(votes).reduce((s, v) => s + v, 0);
+      const poll = POLLS.find(p => p.id === pollId);
+
+      let html = '<div class="poll-results-title">What everyone predicted</div>';
+      poll.options.forEach((opt, i) => {
+        const count = votes[opt] || 0;
+        const pct = total > 0 ? Math.round(count / total * 100) : 0;
+        const color = BAR_COLORS[i % BAR_COLORS.length];
+        html += `<div class="result-row">
+          <span class="result-label" title="${opt}">${opt}</span>
+          <div class="result-bar-track">
+            <div class="result-bar-fill" style="width:${pct}%;background:${color}"></div>
+          </div>
+          <span class="result-pct">${pct}% <span style="font-weight:400;color:#c4b0a4">(${count})</span></span>
+        </div>`;
+      });
+
+      container.innerHTML = html;
+      requestAnimationFrame(() => container.classList.add('visible'));
+    }
+
+    function lockButtons(pollId, selectedOpt) {
+      const card = document.getElementById('poll-' + pollId);
+      card.querySelectorAll('.poll-opt').forEach(btn => {
+        btn.disabled = true;
+        if (btn.dataset.opt === selectedOpt) {
+          btn.classList.add('selected');
+        } else {
+          btn.classList.add('dimmed');
+        }
+      });
+    }
+
+    async function handleVote(pollId, option) {
+      lockButtons(pollId, option);
+      setVoted(pollId, option);
+
+      let updated = null;
+      if (gistData && gistData.predictions) {
+        if (!gistData.predictions[pollId]) {
+          const poll = POLLS.find(p => p.id === pollId);
+          gistData.predictions[pollId] = {};
+          poll.options.forEach(o => gistData.predictions[pollId][o] = 0);
+        }
+        gistData.predictions[pollId][option] = (gistData.predictions[pollId][option] || 0) + 1;
+        updated = await updateGist(gistData);
+      }
+
+      if (updated && updated.predictions && updated.predictions[pollId]) {
+        renderResults(pollId, updated.predictions[pollId]);
+      } else {
+        const el = document.getElementById('results-' + pollId);
+        if (el) {
+          el.innerHTML = '<div class="unavailable-note">Vote counts unavailable</div>';
+          el.classList.add('visible');
+        }
+      }
+    }
+
+    function togglePoll(pollId) {
+      const card = document.getElementById('poll-' + pollId);
+      card.classList.toggle('open');
+    }
+
+    function renderPolls() {
+      const container = document.getElementById('polls');
+      const predictions = (gistData && gistData.predictions) || {};
+
+      POLLS.forEach(poll => {
+        const voted = getVoted(poll.id);
+        const votes = predictions[poll.id] || {};
+        const hint = voted ? 'Your pick: ' + voted : 'Tap to predict';
+
+        let optionsHtml = '';
+        poll.options.forEach(opt => {
+          const cls = voted ? (opt === voted ? 'poll-opt selected' : 'poll-opt dimmed') : 'poll-opt';
+          const disabled = voted ? 'disabled' : '';
+          optionsHtml += `<button class="${cls}" data-opt="${opt}" ${disabled} onclick="handleVote('${poll.id}','${opt.replace(/'/g, "\\'")}')">${opt}</button>`;
+        });
+
+        const card = document.createElement('div');
+        card.className = 'poll-card';
+        card.id = 'poll-' + poll.id;
+
+        card.innerHTML = `
+          <button class="poll-toggle" onclick="togglePoll('${poll.id}')">
+            <span class="poll-emoji" aria-hidden="true">${poll.emoji}</span>
+            <div class="poll-info">
+              <div class="poll-title">${poll.title}</div>
+              <div class="poll-hint">${hint}</div>
+            </div>
+            <svg class="poll-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8l4 4 4-4"/></svg>
+          </button>
+          <div class="poll-body">
+            <div class="poll-options">${optionsHtml}</div>
+            <div class="poll-results" id="results-${poll.id}"></div>
+          </div>
+        `;
+
+        container.appendChild(card);
+
+        if (voted) {
+          const hasVotes = Object.values(votes).some(v => v > 0);
+          if (hasVotes) {
+            renderResults(poll.id, votes);
+          }
+        }
+      });
+    }
+
+    async function init() {
+      await fetchGist();
+      renderPolls();
+    }
+
+    init();
+  </script>
+
+</body>
+
+</html>
