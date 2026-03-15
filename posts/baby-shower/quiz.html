@@ -277,48 +277,6 @@
       opacity: 1;
     }
 
-    /* --- Free-form --- */
-    .freeform-area {
-      width: 100%;
-      max-width: 420px;
-    }
-
-    .freeform-area textarea {
-      width: 100%;
-      min-height: 120px;
-      padding: 1rem;
-      border: 2px solid #d4bfad;
-      border-radius: 0.75rem;
-      background: #fff;
-      font-family: 'Nunito', sans-serif;
-      font-size: 0.95rem;
-      color: #5a4a42;
-      resize: vertical;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .freeform-area textarea:focus {
-      border-color: #c9a68e;
-    }
-
-    .freeform-area textarea::placeholder {
-      color: #c4b0a4;
-    }
-
-    .submitted-note {
-      display: none;
-      margin-top: 1rem;
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 1rem;
-      color: #a8c5a0;
-    }
-
-    .submitted-note.visible {
-      display: block;
-    }
-
     /* --- End screen --- */
     .score-display {
       font-family: 'Cormorant Garamond', serif;
@@ -376,22 +334,6 @@
       margin-top: 0.75rem;
     }
 
-    /* --- Skip link --- */
-    .skip-btn {
-      margin-top: 0.75rem;
-      background: none;
-      border: none;
-      color: #c4b0a4;
-      font-family: 'Nunito', sans-serif;
-      font-size: 0.85rem;
-      cursor: pointer;
-      text-decoration: underline;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .skip-btn:hover {
-      color: #a08478;
-    }
   </style>
 </head>
 
@@ -422,15 +364,9 @@
       { id: 15, text: "Who is more likely to break their own parenting rules?", answer: "Vivek" },
     ];
 
-    const FREE_FORM = [
-      { id: "ff1", text: "Advice / Words of encouragement when we\u2019re fighting for our lives" },
-      { id: "ff2", text: "Who in this room is more likely to be the one the baby calls for a \u201Cfun weekend\u201D away from the parents?" },
-    ];
-
     let gistData = null;
     let score = 0;
-    let currentIndex = 0; // 0 = intro (already shown)
-    const totalCards = QUESTIONS.length + FREE_FORM.length;
+    let currentIndex = 0;
 
     async function fetchGist() {
       try {
@@ -546,25 +482,6 @@
       app.appendChild(div);
     }
 
-    function renderFreeForm(ff, idx) {
-      const div = document.createElement('div');
-      div.className = 'card-screen';
-      div.id = 'card-ff-' + ff.id;
-
-      div.innerHTML = `
-        <div class="decor decor-small" aria-hidden="true">${questionIcon()}</div>
-        <h2>${ff.text}</h2>
-        <div class="freeform-area">
-          <textarea id="textarea-${ff.id}" placeholder="Type your answer here\u2026"></textarea>
-          <button class="submit-btn" onclick="handleFreeForm('${ff.id}', this)">Submit</button>
-          <div class="submitted-note" id="submitted-${ff.id}">Thank you!</div>
-        </div>
-        <button class="skip-btn" onclick="goNext()">Skip</button>
-        <button class="next-btn" id="next-${ff.id}" style="display:none" onclick="goNext()">Next</button>
-      `;
-      app.appendChild(div);
-    }
-
     function renderEnd() {
       const div = document.createElement('div');
       div.className = 'card-screen';
@@ -632,35 +549,9 @@
       setTimeout(() => nextBtn.classList.add('visible'), 400);
     }
 
-    async function handleFreeForm(ffId, btnEl) {
-      const textarea = document.getElementById('textarea-' + ffId);
-      const text = textarea.value.trim();
-      if (!text) return;
-
-      btnEl.disabled = true;
-      textarea.disabled = true;
-
-      if (gistData) {
-        if (!gistData.freeform[ffId]) gistData.freeform[ffId] = [];
-        gistData.freeform[ffId].push(text);
-        await updateGist(gistData);
-      }
-
-      document.getElementById('submitted-' + ffId).classList.add('visible');
-      btnEl.style.display = 'none';
-
-      const skipBtn = btnEl.parentElement.parentElement.querySelector('.skip-btn');
-      if (skipBtn) skipBtn.style.display = 'none';
-
-      const nextBtn = document.getElementById('next-' + ffId);
-      nextBtn.style.display = '';
-      nextBtn.classList.add('visible');
-    }
-
     function getAllCardIds() {
       const ids = ['card-intro'];
       QUESTIONS.forEach(q => ids.push('card-q-' + q.id));
-      FREE_FORM.forEach(ff => ids.push('card-ff-' + ff.id));
       ids.push('card-end');
       return ids;
     }
@@ -688,7 +579,6 @@
       await fetchGist();
       renderIntro();
       QUESTIONS.forEach((q, i) => renderQuestion(q, i));
-      FREE_FORM.forEach((ff, i) => renderFreeForm(ff, i));
     }
 
     init();

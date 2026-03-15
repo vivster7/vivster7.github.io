@@ -3,8 +3,8 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Whose Baby Is It Anyways? - Baby Shower</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>What Will Our Baby Girl Look Like? - Baby Shower</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
@@ -27,122 +27,409 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow: hidden;
     }
 
-    .container {
+    .screen {
+      display: none;
       width: 100%;
       max-width: 520px;
-      padding: 2.5rem 1.25rem 3rem;
+      min-height: 100dvh;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 1.25rem;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* ---------- intro ---------- */
+    .intro {
+      justify-content: center;
       text-align: center;
-      flex: 1;
+      padding: 2rem 1.25rem;
     }
 
-    .back {
-      display: inline-block;
-      font-size: 0.9rem;
-      color: #b89b8a;
-      text-decoration: none;
-      margin-bottom: 2rem;
-      transition: color 0.15s;
-    }
-
-    .back:hover { color: #8b6f5e; }
-
-    .icon-area {
+    .intro .icon-area {
       margin-bottom: 1.2rem;
     }
 
-    .icon-area svg {
+    .intro .icon-area svg {
       width: min(100px, 25vw);
       height: auto;
     }
 
-    h1 {
+    .intro h1 {
       font-family: 'Cormorant Garamond', serif;
       font-weight: 600;
-      font-size: clamp(2rem, 5vw, 2.8rem);
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
       color: #8b6f5e;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.8rem;
+      line-height: 1.2;
     }
 
-    .coming-soon {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: clamp(1rem, 3vw, 1.2rem);
-      color: #b89b8a;
-      margin-bottom: 1.5rem;
-    }
-
-    .description {
+    .intro .context {
       font-size: 0.95rem;
-      line-height: 1.6;
+      line-height: 1.7;
       color: #a08478;
       max-width: 380px;
-      margin: 0 auto;
+      margin: 0 auto 1.8rem;
     }
 
-    .bottom-accent {
-      padding: 2rem 0 1.5rem;
+    .intro .instructions {
+      font-size: 0.85rem;
+      color: #b89b8a;
+      margin-bottom: 2rem;
+      font-style: italic;
+    }
+
+    .btn-start {
+      display: inline-block;
+      background: #d4a98c;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 0.9rem 2.8rem;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-start:hover { background: #c4917a; }
+    .btn-start:active { transform: scale(0.97); }
+
+    /* ---------- game ---------- */
+    .game {
+      justify-content: flex-start;
+      padding: 1rem 0.75rem 1rem;
+      position: relative;
+    }
+
+    .progress {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      color: #b89b8a;
+      margin: 0.5rem 0 0.6rem;
+      letter-spacing: 0.05em;
+    }
+
+    .photo-frame {
+      position: relative;
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #f0e4d8;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      max-height: calc(100dvh - 180px);
+    }
+
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      transition: opacity 0.3s;
+    }
+
+    .photo-frame img.loading {
+      opacity: 0;
+    }
+
+    .feedback-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(253, 248, 244, 0.88);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      z-index: 5;
+    }
+
+    .feedback-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .feedback-icon {
+      font-size: 3.5rem;
+      margin-bottom: 0.3rem;
+      line-height: 1;
+    }
+
+    .feedback-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      font-weight: 600;
+    }
+
+    .feedback-text.correct { color: #7aab7a; }
+    .feedback-text.wrong   { color: #c47a6e; }
+
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+      padding: 0.8rem 0 1rem;
+      flex-shrink: 0;
+    }
+
+    .btn-choice {
+      flex: 1;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 0.9rem 0;
+      border: 2px solid;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, opacity 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      background: #fff;
+    }
+
+    .btn-choice:active { transform: scale(0.96); }
+
+    .btn-choice.not-us {
+      color: #c47a6e;
+      border-color: #e4ada4;
+    }
+
+    .btn-choice.not-us:hover { background: #fdf0ee; }
+
+    .btn-choice.us {
+      color: #7aab7a;
+      border-color: #a4cfaa;
+    }
+
+    .btn-choice.us:hover { background: #f0f8f0; }
+
+    .btn-choice:disabled {
+      opacity: 0.5;
+      cursor: default;
+      transform: none;
+    }
+
+    /* ---------- end screen ---------- */
+    .end-screen {
+      justify-content: center;
       text-align: center;
+      padding: 2rem 1.25rem;
     }
 
-    .bottom-accent svg {
-      width: min(120px, 30vw);
-      height: auto;
-      opacity: 0.35;
+    .end-screen h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      color: #8b6f5e;
+      margin-bottom: 0.4rem;
+    }
+
+    .end-score {
+      font-size: 1rem;
+      color: #a08478;
+      margin-bottom: 1.2rem;
+    }
+
+    .end-photo {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 auto 1rem;
+    }
+
+    .end-photo img {
+      width: 100%;
+      display: block;
+    }
+
+    .end-blooper-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: #b89b8a;
+      margin-bottom: 1.8rem;
+    }
+
+    .btn-back {
+      display: inline-block;
+      font-size: 0.95rem;
+      color: #b89b8a;
+      text-decoration: none;
+      padding: 0.7rem 1.5rem;
+      border: 1.5px solid #d4bfad;
+      border-radius: 30px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .btn-back:hover {
+      color: #8b6f5e;
+      border-color: #b89b8a;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
-    <a class="back" href="index.html">&larr; Back to games</a>
-
+  <!-- INTRO -->
+  <div class="screen intro active" id="screen-intro">
     <div class="icon-area" aria-hidden="true">
       <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- polaroid-style frame -->
         <rect x="18" y="12" width="64" height="72" rx="3" fill="#fff" stroke="#d4bfad" stroke-width="1.2"/>
         <rect x="24" y="18" width="52" height="46" rx="1" fill="#f0e4d8"/>
-        <!-- baby face in the photo -->
         <circle cx="50" cy="38" r="14" fill="#e8d5c4"/>
         <circle cx="45" cy="36" r="1.8" fill="#b89b8a"/>
         <circle cx="55" cy="36" r="1.8" fill="#b89b8a"/>
         <path d="M46 43 Q50 47 54 43" stroke="#b89b8a" stroke-width="1.3" fill="none" stroke-linecap="round"/>
         <path d="M40 26 Q50 18 60 26" stroke="#d4bfad" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        <!-- question mark overlay -->
         <circle cx="68" cy="18" r="10" fill="#f2c6b8" opacity="0.8"/>
         <text x="68" y="23" font-family="Cormorant Garamond, serif" font-size="14" fill="#fff" text-anchor="middle" font-weight="600">?</text>
       </svg>
     </div>
 
-    <h1>Whose Baby Is It Anyways?</h1>
-    <p class="coming-soon">Coming soon</p>
-    <p class="description">
-      Can you match the adorable baby photo to the right guest?
-      Prepare for some surprising reveals and plenty of laughs.
+    <h1>What Will Our Baby Girl Look Like?</h1>
+
+    <p class="context">
+      We asked some LLMs to imagine what our baby girl might look like &mdash;
+      using photos of us <em>and</em> another couple.<br><br>
+      Can you figure out which babies were generated from <strong>our</strong> photos?
     </p>
+
+    <p class="instructions">
+      Tap &ldquo;Us!&rdquo; if you think the parents are us, or &ldquo;Not Us&rdquo; if not.
+    </p>
+
+    <button class="btn-start" onclick="startGame()">Let&rsquo;s Go!</button>
   </div>
 
-  <div class="bottom-accent" aria-hidden="true">
-    <svg viewBox="0 0 120 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- two small bunnies -->
-      <ellipse cx="38" cy="34" rx="10" ry="7" fill="#d4bfad"/>
-      <circle cx="46" cy="26" r="5.5" fill="#d4bfad"/>
-      <ellipse cx="43" cy="18" rx="2" ry="6" fill="#d4bfad" transform="rotate(-8 43 18)"/>
-      <ellipse cx="49" cy="17" rx="2" ry="6.5" fill="#d4bfad" transform="rotate(8 49 17)"/>
-      <circle cx="28" cy="32" r="2.5" fill="#e0cfc2"/>
-
-      <ellipse cx="78" cy="34" rx="10" ry="7" fill="#d4bfad"/>
-      <circle cx="70" cy="26" r="5.5" fill="#d4bfad"/>
-      <ellipse cx="67" cy="17" rx="2" ry="6.5" fill="#d4bfad" transform="rotate(-8 67 17)"/>
-      <ellipse cx="73" cy="18" rx="2" ry="6" fill="#d4bfad" transform="rotate(8 73 18)"/>
-      <circle cx="88" cy="32" r="2.5" fill="#e0cfc2"/>
-
-      <!-- small heart between them -->
-      <path d="M58 28 Q55 22 58 26 Q61 22 58 28Z" fill="#e8c4b8" opacity="0.6"/>
-    </svg>
+  <!-- GAME -->
+  <div class="screen game" id="screen-game">
+    <div class="progress" id="progress">1 / 10</div>
+    <div class="photo-frame" id="photo-frame">
+      <img id="photo" src="" alt="AI-generated baby photo">
+      <div class="feedback-overlay" id="feedback">
+        <div class="feedback-icon" id="feedback-icon"></div>
+        <div class="feedback-text" id="feedback-text"></div>
+      </div>
+    </div>
+    <div class="buttons" id="buttons">
+      <button class="btn-choice not-us" onclick="answer(false)">Not Us</button>
+      <button class="btn-choice us" onclick="answer(true)">Us!</button>
+    </div>
   </div>
+
+  <!-- END -->
+  <div class="screen end-screen" id="screen-end">
+    <h1>Thanks for playing!</h1>
+    <div class="end-score" id="end-score"></div>
+    <div class="end-photo">
+      <img src="images/baby-end.jpg" alt="Blooper baby photo">
+    </div>
+    <div class="end-blooper-label">And here&rsquo;s a bonus blooper for you&hellip;</div>
+    <a class="btn-back" href="index.html">&larr; Back to games</a>
+  </div>
+
+  <script>
+    const PHOTOS = [
+      { src: 'images/baby-01.jpg', real: false },
+      { src: 'images/baby-02.jpg', real: true  },
+      { src: 'images/baby-03.jpg', real: false },
+      { src: 'images/baby-04.jpg', real: false },
+      { src: 'images/baby-05.jpg', real: true  },
+      { src: 'images/baby-06.jpg', real: false },
+      { src: 'images/baby-07.jpg', real: true  },
+      { src: 'images/baby-08.jpg', real: false },
+      { src: 'images/baby-09.jpg', real: false },
+      { src: 'images/baby-10.jpg', real: true  },
+    ];
+
+    let current = 0;
+    let score = 0;
+    let answering = false;
+
+    function show(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function preloadImages() {
+      PHOTOS.forEach(p => { const i = new Image(); i.src = p.src; });
+      const blooper = new Image(); blooper.src = 'images/baby-end.jpg';
+    }
+
+    function startGame() {
+      current = 0;
+      score = 0;
+      answering = false;
+      show('screen-game');
+      loadPhoto();
+    }
+
+    function loadPhoto() {
+      const img = document.getElementById('photo');
+      const overlay = document.getElementById('feedback');
+
+      overlay.classList.remove('visible');
+      img.classList.add('loading');
+
+      img.onload = function () { img.classList.remove('loading'); };
+      img.src = PHOTOS[current].src;
+
+      document.getElementById('progress').textContent =
+        (current + 1) + ' / ' + PHOTOS.length;
+
+      document.querySelectorAll('.btn-choice').forEach(b => b.disabled = false);
+    }
+
+    function answer(guessedUs) {
+      if (answering) return;
+      answering = true;
+
+      document.querySelectorAll('.btn-choice').forEach(b => b.disabled = true);
+
+      const correct = guessedUs === PHOTOS[current].real;
+      if (correct) score++;
+
+      const overlay = document.getElementById('feedback');
+      const icon = document.getElementById('feedback-icon');
+      const text = document.getElementById('feedback-text');
+
+      icon.textContent = correct ? '\u2714' : '\u2718';
+      text.textContent = correct ? 'Correct!' : 'Nope!';
+      text.className = 'feedback-text ' + (correct ? 'correct' : 'wrong');
+      overlay.classList.add('visible');
+
+      setTimeout(function () {
+        current++;
+        answering = false;
+        if (current < PHOTOS.length) {
+          loadPhoto();
+        } else {
+          showEnd();
+        }
+      }, 1800);
+    }
+
+    function showEnd() {
+      document.getElementById('end-score').textContent =
+        'You got ' + score + ' out of ' + PHOTOS.length + '!';
+      show('screen-end');
+    }
+
+    preloadImages();
+  </script>
 
 </body>
 

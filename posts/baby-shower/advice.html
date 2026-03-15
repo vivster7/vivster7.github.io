@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Any Advice? - Baby Shower</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #fdf8f4;
+      color: #5a4a42;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      padding: 2.5rem 1.25rem 3rem;
+      text-align: center;
+      flex: 1;
+    }
+
+    .back {
+      display: inline-block;
+      font-size: 0.9rem;
+      color: #b89b8a;
+      text-decoration: none;
+      margin-bottom: 2rem;
+      transition: color 0.15s;
+    }
+
+    .back:hover { color: #8b6f5e; }
+
+    .icon-area {
+      margin-bottom: 1.2rem;
+    }
+
+    .icon-area svg {
+      width: min(100px, 25vw);
+      height: auto;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      color: #8b6f5e;
+      margin-bottom: 0.3rem;
+    }
+
+    .subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+      color: #b89b8a;
+      margin-bottom: 2rem;
+    }
+
+    .prompts {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      text-align: left;
+    }
+
+    .prompt {
+      background: #fff;
+      border: 1px solid #ecddd3;
+      border-radius: 1rem;
+      padding: 1.15rem;
+    }
+
+    .prompt-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #8b6f5e;
+      margin-bottom: 0.6rem;
+      line-height: 1.35;
+    }
+
+    .prompt textarea {
+      width: 100%;
+      min-height: 90px;
+      padding: 0.75rem;
+      border: 1.5px solid #d4bfad;
+      border-radius: 0.6rem;
+      background: #fdf8f4;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.9rem;
+      color: #5a4a42;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .prompt textarea:focus {
+      border-color: #c9a68e;
+    }
+
+    .prompt textarea::placeholder {
+      color: #c4b0a4;
+    }
+
+    .prompt textarea:disabled {
+      background: #f5efe9;
+      color: #a08478;
+    }
+
+    .submit-btn {
+      margin-top: 0.6rem;
+      padding: 0.55rem 1.5rem;
+      border: none;
+      border-radius: 2rem;
+      background: #c9a68e;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .submit-btn:hover { background: #b89b8a; }
+    .submit-btn:active { transform: scale(0.97); }
+    .submit-btn:disabled { background: #d4bfad; cursor: default; }
+
+    .thanks {
+      display: none;
+      margin-top: 0.5rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: #a8c5a0;
+    }
+
+    .thanks.visible { display: block; }
+
+    .bottom-accent {
+      padding: 2rem 0 1.5rem;
+      text-align: center;
+    }
+
+    .bottom-accent svg {
+      width: min(120px, 30vw);
+      height: auto;
+      opacity: 0.35;
+    }
+
+    @media (min-width: 480px) {
+      .prompt { padding: 1.25rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <a class="back" href="index.html">&larr; Back to games</a>
+
+    <div class="icon-area" aria-hidden="true">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- envelope -->
+        <rect x="15" y="28" width="70" height="48" rx="4" fill="#fff" stroke="#d4bfad" stroke-width="1.2"/>
+        <path d="M15 32 L50 58 L85 32" stroke="#d4bfad" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- small heart -->
+        <path d="M50 18 C46 10, 36 12, 38 20 C38 24, 50 32, 50 32 C50 32, 62 24, 62 20 C64 12, 54 10, 50 18Z" fill="#f2c6b8" opacity="0.7"/>
+      </svg>
+    </div>
+
+    <h1>Any Advice?</h1>
+    <p class="subtitle">For when we&rsquo;re in the trenches</p>
+
+    <div class="prompts">
+      <div class="prompt" id="prompt-ff1">
+        <div class="prompt-label">Words of encouragement for when we're fighting for our lives</div>
+        <textarea id="textarea-ff1" placeholder="Type your advice here..."></textarea>
+        <button class="submit-btn" onclick="submitAdvice('ff1')">Send</button>
+        <div class="thanks" id="thanks-ff1">Thank you!</div>
+      </div>
+
+      <div class="prompt" id="prompt-ff2">
+        <div class="prompt-label">Who in this room is most likely to be the one the baby calls for a "fun weekend" away from the parents?</div>
+        <textarea id="textarea-ff2" placeholder="Type your answer here..."></textarea>
+        <button class="submit-btn" onclick="submitAdvice('ff2')">Send</button>
+        <div class="thanks" id="thanks-ff2">Thank you!</div>
+      </div>
+
+      <div class="prompt" id="prompt-ff3">
+        <div class="prompt-label">Any favorite baby names? Asking for a friend...</div>
+        <textarea id="textarea-ff3" placeholder="Type your suggestions here..."></textarea>
+        <button class="submit-btn" onclick="submitAdvice('ff3')">Send</button>
+        <div class="thanks" id="thanks-ff3">Thank you!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-accent" aria-hidden="true">
+    <svg viewBox="0 0 120 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="38" cy="34" rx="10" ry="7" fill="#d4bfad"/>
+      <circle cx="46" cy="26" r="5.5" fill="#d4bfad"/>
+      <ellipse cx="43" cy="18" rx="2" ry="6" fill="#d4bfad" transform="rotate(-8 43 18)"/>
+      <ellipse cx="49" cy="17" rx="2" ry="6.5" fill="#d4bfad" transform="rotate(8 49 17)"/>
+      <circle cx="28" cy="32" r="2.5" fill="#e0cfc2"/>
+      <ellipse cx="78" cy="34" rx="10" ry="7" fill="#d4bfad"/>
+      <circle cx="70" cy="26" r="5.5" fill="#d4bfad"/>
+      <ellipse cx="67" cy="17" rx="2" ry="6.5" fill="#d4bfad" transform="rotate(-8 67 17)"/>
+      <ellipse cx="73" cy="18" rx="2" ry="6" fill="#d4bfad" transform="rotate(8 73 18)"/>
+      <circle cx="88" cy="32" r="2.5" fill="#e0cfc2"/>
+      <path d="M58 28 Q55 22 58 26 Q61 22 58 28Z" fill="#e8c4b8" opacity="0.6"/>
+    </svg>
+  </div>
+
+  <script>
+    const GIST_ID = '427359f6e41bcf04924234a6f6ae786e';
+    const _p = ['Z2l0aHViX3BhdF8xMUFBT1FYSlkwc1Zp','QWZ0T1BKOVpZX0Z4RUgzQ3JVQTQwMUI0','YjdBV2Y1NkhqdkhQclRObTN6ZHFmRmFq','ODlSa09FVUdMNEI2RHdORjZVdnVt'];
+    function _t() { return atob(_p.join('')); }
+
+    let gistData = null;
+
+    async function fetchGist() {
+      try {
+        const res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+          headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        gistData = JSON.parse(data.files['quiz-data.json'].content);
+      } catch (e) {
+        console.warn('Failed to fetch gist:', e);
+      }
+    }
+
+    async function updateGist(newData) {
+      try {
+        const res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+          method: 'PATCH',
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': 'token ' + _t(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            files: { 'quiz-data.json': { content: JSON.stringify(newData) } }
+          })
+        });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        gistData = JSON.parse(data.files['quiz-data.json'].content);
+      } catch (e) {
+        console.warn('Failed to update gist:', e);
+      }
+    }
+
+    function hasSubmitted(id) {
+      try { return localStorage.getItem('advice_' + id) === '1'; } catch { return false; }
+    }
+
+    function markSubmitted(id) {
+      try { localStorage.setItem('advice_' + id, '1'); } catch {}
+    }
+
+    async function submitAdvice(ffId) {
+      const textarea = document.getElementById('textarea-' + ffId);
+      const text = textarea.value.trim();
+      if (!text) return;
+
+      const btn = textarea.parentElement.querySelector('.submit-btn');
+      btn.disabled = true;
+      textarea.disabled = true;
+
+      if (gistData) {
+        if (!gistData.freeform) gistData.freeform = {};
+        if (!gistData.freeform[ffId]) gistData.freeform[ffId] = [];
+        gistData.freeform[ffId].push(text);
+        await updateGist(gistData);
+      }
+
+      markSubmitted(ffId);
+      btn.style.display = 'none';
+      document.getElementById('thanks-' + ffId).classList.add('visible');
+    }
+
+    function restoreSubmitted() {
+      ['ff1', 'ff2', 'ff3'].forEach(id => {
+        if (hasSubmitted(id)) {
+          const textarea = document.getElementById('textarea-' + id);
+          const btn = textarea.parentElement.querySelector('.submit-btn');
+          textarea.disabled = true;
+          textarea.placeholder = 'Already submitted';
+          btn.style.display = 'none';
+          document.getElementById('thanks-' + id).classList.add('visible');
+        }
+      });
+    }
+
+    fetchGist();
+    restoreSubmitted();
+  </script>
+
+</body>
+
+</html>

@@ -5,9 +5,11 @@ A mobile-friendly baby shower game hub at `posts/baby-shower/`.
 ## Pages
 
 - **[index.html](index.html)** -- Welcome landing page with links to all three games
-- **[quiz.html](quiz.html)** -- "Vivek or Jenn?" quiz (15 questions + 2 free-form)
+- **[quiz.html](quiz.html)** -- "Vivek or Jenn?" quiz (15 multiple-choice questions)
 - **[prediction-market.html](prediction-market.html)** -- Baby prediction polls (5 questions)
-- **[whose-baby-is-it-anyways.html](whose-baby-is-it-anyways.html)** -- Stub (not yet built)
+- **[whose-baby-is-it-anyways.html](whose-baby-is-it-anyways.html)** -- "What Will Our Baby Girl Look Like?" photo guessing game (10 AI-generated baby photos + 1 blooper)
+- **[index.html](index.html) "Any Advice?" section** -- Free-form advice/encouragement prompts (3 questions)
+- **images/** -- Downsized JPEG photos for the baby photo game
 
 ## Tech Stack
 
